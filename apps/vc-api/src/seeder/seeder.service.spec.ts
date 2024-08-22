@@ -5,22 +5,26 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { SeederService } from './seeder.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { KeyPair } from '../key/key-pair.entity';
 import { keyPairFixture } from './fixtures/key-pair.fixture';
 import { DIDService } from '../did/did.service';
+import { KeyService } from '../key/key.service';
+import { CredoModule } from '../credo/credo.module';
+import { Base64ToBase58 } from '../utils/crypto.utils';
 
 describe('SeederService', () => {
   let service: SeederService;
-
-  const mockKeyPairRepository = { save: jest.fn() };
+  const mockKeyService = { importKey: jest.fn() };
   const mockDIDService = { registerKeyDID: jest.fn() };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [CredoModule],
       providers: [
+        {
+          provide: KeyService,
+          useValue: mockKeyService
+        },
         SeederService,
-        { provide: getRepositoryToken(KeyPair), useValue: mockKeyPairRepository },
         {
           provide: DIDService,
           useValue: mockDIDService
@@ -44,7 +48,9 @@ describe('SeederService', () => {
       let exception: Error;
 
       beforeEach(async function () {
-        mockKeyPairRepository.save.mockReset();
+        mockKeyService.importKey.mockReset()
+          .mockResolvedValueOnce({keyId: "EMALqbXvBBETNa6wjhJbJMAHiLZotMJYT4KnicduGjii"})
+          .mockResolvedValueOnce({keyId: "5M7AxPh4tTF7kJH3yZoi7AUZSVVF8Xi7QWybrX9vNEPx"});
         mockDIDService.registerKeyDID.mockReset();
         try {
           await service.seed();
@@ -58,18 +64,18 @@ describe('SeederService', () => {
       });
 
       it('should seed all key pairs', async function () {
-        expect(mockKeyPairRepository.save).toHaveBeenCalledTimes(keyPairFixture.length);
+        expect(mockKeyService.importKey).toHaveBeenCalledTimes(keyPairFixture.length);
 
         for (const keyPair of keyPairFixture) {
-          expect(mockKeyPairRepository.save).toHaveBeenCalledWith(keyPair);
+          expect(mockKeyService.importKey).toHaveBeenCalledWith(keyPair);
         }
       });
 
       it('should register DIDs', async function () {
         expect(mockDIDService.registerKeyDID).toHaveBeenCalledTimes(keyPairFixture.length);
-
         for (const keyPair of keyPairFixture) {
-          expect(mockDIDService.registerKeyDID).toHaveBeenCalledWith(keyPair.publicKeyThumbprint);
+          const base58pubKey = Base64ToBase58(keyPair.publicKey.x);
+          expect(mockDIDService.registerKeyDID).toHaveBeenCalledWith(base58pubKey);
         }
       });
     });

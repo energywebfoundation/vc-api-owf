@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { keyToDID, keyToVerificationMethod } from '@spruceid/didkit-wasm-node';
-import { DIDDocument, VerificationMethod } from 'did-resolver';
-import { verificationMethodTypes } from 'ethr-did-resolver';
+import { Agent, Key, KeyDidCreateOptions, KeyType, Ed25519Jwk } from "@credo-ts/core";
+import { AskarModule } from '@credo-ts/askar';
+import { DIDDocument } from 'did-resolver';
 import { DifJsonWebKey } from '.';
 
 export class DIDKeyFactory {
@@ -14,19 +14,23 @@ export class DIDKeyFactory {
    * Currently, only Ed25519 keys are supported
    * @returns The default DID Document of the DID. E.g. https://github.com/decentralized-identity/ethr-did-resolver#did-document
    */
-  public static async generate(ed25119Key: DifJsonWebKey): Promise<DIDDocument> {
-    const did = await keyToDID('key', JSON.stringify(ed25119Key));
-    const id = await keyToVerificationMethod('key', JSON.stringify(ed25119Key));
-    const verificationMethod: VerificationMethod = {
-      id,
-      type: verificationMethodTypes.Ed25519VerificationKey2018,
-      controller: did,
-      publicKeyJwk: ed25119Key
-    };
-
-    return {
-      id: did,
-      verificationMethod: [verificationMethod]
-    };
+  public static async generate(agent: Agent<{askar: AskarModule;}>, ed25119Key: DifJsonWebKey): Promise<DIDDocument> {
+      const ed25519Jwk = new Ed25519Jwk({ x: ed25119Key.x! });
+      const credoKey: Key = new Key(ed25519Jwk.publicKey, KeyType.Ed25519);
+  
+      const didCreateOptions: KeyDidCreateOptions = {
+        method: 'key',
+        options: {
+          key: credoKey,
+        },
+      };
+  
+      const did = await agent.dids.create(didCreateOptions);
+  
+      if (did.didState.didDocument) {
+        return did.didState.didDocument;
+      } else {
+        throw new Error('Error generating did');
+      }
   }
 }

@@ -22,7 +22,11 @@
     "ethers": "6.6.2",
     "did-resolver": "~4.1.0",
     "ethr-did-resolver": "~8.0.0",
-    "@spruceid/didkit-wasm-node": "~0.2.1"
+    "@spruceid/didkit-wasm-node": "~0.2.1",
+    "@credo-ts/askar": "^0.5.3",
+    "@credo-ts/core": "^0.5.3",
+    "@credo-ts/node": "^0.5.3",
+    "@hyperledger/aries-askar-nodejs": "^0.2.1"
   },
   "devDependencies": {
     "@types/jest": "^29.5.2",

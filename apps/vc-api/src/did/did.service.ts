@@ -12,11 +12,13 @@ import { Repository } from 'typeorm';
 import { KeyService } from '../key/key.service';
 import { DIDDocumentEntity } from './entities/did-document.entity';
 import { VerificationMethodEntity } from './entities/verification-method.entity';
+import { CredoService } from '../credo/credo.service';
 
 @Injectable()
 export class DIDService {
   constructor(
     private keyService: KeyService,
+    private readonly credoService: CredoService,
     @InjectRepository(DIDDocumentEntity)
     private didRepository: Repository<DIDDocumentEntity>,
     @InjectRepository(VerificationMethodEntity)
@@ -46,23 +48,21 @@ export class DIDService {
    * @returns DID Document of registered DID
    */
   public async registerKeyDID(keyId: string): Promise<DIDDocument> {
-    const key = await this.keyService.getPublicKeyFromKeyId(keyId);
+    const key = await this.keyService.fetchKey(keyId);
 
     if (!key) {
       throw new BadRequestException(`keyId=${keyId} not found`);
     }
 
     // Need to set kty because it is possibly undefined in 'jose' JWK type
-    const difKey = { ...key, kty: 'OKP' };
-    const didDoc = await DIDKeyFactory.generate(difKey);
-    return await this.saveNewDIDDoc(didDoc);
+    const difKey = { ...key?.key?.jwkPublic, kty: 'OKP' };
+    const didDoc = await DIDKeyFactory.generate(this.credoService.agent, difKey);
+    return didDoc;
   }
 
   public async getDID(did: string): Promise<DIDDocument> {
-    return await this.didRepository.findOne({
-      where: { id: did },
-      relations: { verificationMethod: true }
-    });
+    const didDoc = this.credoService.agent.dids.resolveDidDocument(did);
+    return didDoc;
   }
 
   public async getVerificationMethod(id: string): Promise<VerificationMethod> {

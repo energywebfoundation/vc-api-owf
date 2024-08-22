@@ -8,9 +8,10 @@ import { SeederService } from './seeder.service';
 import { KeyPair } from '../key/key-pair.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DidModule } from '../did/did.module';
+import { KeyModule } from '../key/key.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([KeyPair]), DidModule],
+  imports: [TypeOrmModule.forFeature([KeyPair]), DidModule, KeyModule],
   providers: [SeederService]
 })
 export class SeederModule {}

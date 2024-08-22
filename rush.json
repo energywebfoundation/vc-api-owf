@@ -103,7 +103,7 @@
      *
      * This option is experimental. The default value is false.
      */
-    // "useWorkspaces": true
+    "useWorkspaces": true
   },
   /**
    * Older releases of the Node.js engine may be missing features required by your system.

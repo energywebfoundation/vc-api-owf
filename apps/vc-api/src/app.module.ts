@@ -14,6 +14,7 @@ import { join } from 'path';
 import { SeederModule } from './seeder/seeder.module';
 import { envVarsValidationSchema } from './config/env-vars-validation-schema';
 import { HttpLoggerMiddleware } from './middlewares';
+import { CredoModule } from './credo/credo.module';
 
 let config: DynamicModule;
 
@@ -39,6 +40,7 @@ try {
     KeyModule,
     DidModule,
     VcApiModule,
+    CredoModule,
     config,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../..', 'static-assets', '.well-known'),
