@@ -28,6 +28,11 @@ Rel(did, db, "Read & Write DID Documents")
 Rel(key, db, "Read & Write keys")
 
 ContainerDb(db, "DIDs, Keys", "Relational Database", "")
+UpdateLayoutConfig($c4ShapeInRow="2")
+UpdateRelStyle(vc-api, did, $offsetY="-20", $offsetX="-80")
+UpdateRelStyle(vc-api, key, $offsetX="-150")
+UpdateRelStyle(did, db, $offsetX="-165")
+UpdateRelStyle(key, db, $offsetY="10", $offsetX="-50")
 ```
 
 ## Credential Exchanges
