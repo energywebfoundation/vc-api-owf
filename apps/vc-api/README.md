@@ -12,9 +12,6 @@ See [tutorials](./docs/tutorials/).
 ## Architecture
 
 The following is a [C4 Component diagram](https://c4model.com/#ComponentDiagram) of the VC-API app.
-The diagram was generated from the [EnergyWeb IcePanel](https://s.icepanel.io/gODPIqAQio/-/-/ogr9zwswt9s/CtO2okz0wV/204/200/1). 
-
-![vc-api c4 component diagram](./vc-api.c4component.png)
 
 ```mermaid
 C4Component
