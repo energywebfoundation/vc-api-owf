@@ -16,6 +16,20 @@ The diagram was generated from the [EnergyWeb IcePanel](https://s.icepanel.io/gO
 
 ![vc-api c4 component diagram](./vc-api.c4component.png)
 
+```mermaid
+C4Component
+Component(vc-api, "VC-API Module", "Nest.js Module", "VC API spec Holder, Issue and Verifier endpoints")
+Component(did, "DID Module", "Nest.js Module", "DID Generation, Storage/Retrieval")
+Component(key, "Key Module", "Nest.js Module", "Key Generation, Storage and Retrieval")
+
+Rel(vc-api, did, "Get Verification Method for signing")
+Rel(vc-api, key, "Get Private Key for signing")
+Rel(did, db, "Read & Write DID Documents")
+Rel(key, db, "Read & Write keys")
+
+ContainerDb(db, "DIDs, Keys", "Relational Database", "")
+```
+
 ## Credential Exchanges
 
 Credential exchanges are the processes by which credentials are moved between wallet/agent and issuer/verifer.
