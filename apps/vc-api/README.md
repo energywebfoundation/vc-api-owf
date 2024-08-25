@@ -11,7 +11,7 @@ See [tutorials](./docs/tutorials/).
 
 ## Architecture
 
-The following is a [C4 Component diagram](https://c4model.com/#ComponentDiagram) of the VC-API app.
+The following is a [C4 Component diagram](https://c4model.com/#ComponentDiagram) of key functional modules of the VC-API implementation.
 
 ```mermaid
 C4Component
