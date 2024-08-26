@@ -16,19 +16,18 @@ The following is a [C4 Component diagram](https://c4model.com/#ComponentDiagram)
 ```mermaid
 C4Component
 Component(vc-api, "VC-API Module", "Nest.js Module", "VC API spec Holder, Issue and Verifier endpoints")
-Component(did, "DID Module", "Nest.js Module", "DID Generation, Storage/Retrieval")
+Component(did, "DID Module", "Nest.js Module", "DID and Generation, Storage/Retrieval")
 Component(key, "Key Module", "Nest.js Module", "Key Generation, Storage and Retrieval")
+ContainerDb(db, "Aries Askar DB", "DB Engine TBD", "DID and key storage.")
 
-Rel(vc-api, did, "Get Verification Method for signing")
-Rel(vc-api, key, "Get Private Key for signing")
-Rel(did, db, "Read & Write DID Documents")
-Rel(key, db, "Read & Write keys")
+Rel(vc-api, db, "Get private keys for signing (via Credo)")
+Rel(did, db, "Read & Write DID documents and keys (via Credo)")
+Rel(key, db, "Read keys for export")
 
-ContainerDb(db, "DIDs, Keys", "Relational Database", "")
 UpdateLayoutConfig($c4ShapeInRow="2")
 UpdateRelStyle(vc-api, did, $offsetY="-20", $offsetX="-80")
-UpdateRelStyle(vc-api, key, $offsetX="-150")
-UpdateRelStyle(did, db, $offsetX="-165")
+UpdateRelStyle(vc-api, db, $offsetX="-220")
+UpdateRelStyle(did, db, $offsetX="-140")
 UpdateRelStyle(key, db, $offsetY="10", $offsetX="-50")
 ```
 
