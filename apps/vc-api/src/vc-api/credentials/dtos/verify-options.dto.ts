@@ -44,7 +44,7 @@ export class VerifyOptionsDto implements VerifyOptions {
     description:
       'A challenge provided by the requesting party of the proof. For example 6e62f66e-67de-11eb-b490-ef3eeefa55f2'
   })
-  challenge?: string;
+  challenge: string;
 
   @IsString()
   @IsOptional()

@@ -25,9 +25,9 @@ describe('KeyService', () => {
       imports: [TypeOrmSQLiteModule(), TypeOrmModule.forFeature([KeyPair]), CredoModule],
       providers: [
         KeyService,
-        { 
+        {
           provide: CredoService,
-          useValue: mockCredoService,
+          useValue: mockCredoService
         }
       ]
     }).compile();
@@ -42,7 +42,7 @@ describe('KeyService', () => {
   it('should return undefined if asked for privateKey that it does not have', async () => {
     jest.spyOn(mockCredoService.wallet, 'withSession').mockImplementation(async (callback) => {
       return await callback({
-        fetchKey: jest.fn().mockResolvedValue(null),
+        fetchKey: jest.fn().mockResolvedValue(null)
       });
     });
     const result = await service.getPublicKeyFromKeyId('thumbprint-of-not-available-key');
@@ -54,7 +54,7 @@ describe('KeyService', () => {
       jest.spyOn(mockCredoService.agent.wallet, 'createKey').mockResolvedValue(createdKey);
       jest.spyOn(mockCredoService.wallet, 'withSession').mockImplementation(async (callback) => {
         return await callback({
-          fetchKey: jest.fn().mockResolvedValue(keyEntryObject),
+          fetchKey: jest.fn().mockResolvedValue(keyEntryObject)
         });
       });
       const keyDescription = await service.generateKey({ type: keyType.ed25519 });

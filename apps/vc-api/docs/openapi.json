@@ -626,7 +626,7 @@
       "KeyDescriptionDto": {
         "type": "object",
         "properties": {
-          "keyId": { "type": "string", "description": "id of key (for example, JWK thumbprint)" }
+          "keyId": { "type": "string", "description": "id of key (for example, public key base58 string)" }
         },
         "required": ["keyId"]
       },
@@ -653,14 +653,15 @@
         },
         "required": ["statusCode", "message", "error"]
       },
-      "DidMethod": { "type": "string", "enum": ["key", "ethr"] },
+      "DidMethod": {
+        "type": "string",
+        "description": "DID Method to create.\nMust be one of \"key\" or \"ethr\"",
+        "enum": ["key", "ethr"]
+      },
       "CreateDidOptionsDto": {
         "type": "object",
         "properties": {
-          "method": {
-            "description": "DID Method to create.\nMust be one of \"key\" or \"ethr\"",
-            "$ref": "#/components/schemas/DidMethod"
-          },
+          "method": { "$ref": "#/components/schemas/DidMethod" },
           "keyId": {
             "type": "string",
             "description": "id of key (for example, JWK thumbprint).\nThis key must be known to the server already.\nIf provided, DID will be created using this key.\nCurrently only supported for did:key."
@@ -801,8 +802,28 @@
         },
         "required": ["@context", "type", "issuer", "issuanceDate", "credentialSubject", "proof"]
       },
+      "VerifyCredentialDto": {
+        "type": "object",
+        "properties": {
+          "verifiableCredential": {
+            "description": "A JSON-LD Verifiable Credential with a proof. https://w3c-ccg.github.io/vc-api/issuer.html#operation/issueCredential",
+            "allOf": [{ "$ref": "#/components/schemas/VerifiableCredentialDto" }]
+          }
+        },
+        "required": ["verifiableCredential"]
+      },
+      "VerificationResultDto": {
+        "type": "object",
+        "properties": {
+          "warnings": { "description": "Warnings", "type": "array", "items": { "type": "string" } },
+          "errors": { "description": "Errors", "type": "array", "items": { "type": "string" } },
+          "verified": { "type": "boolean", "description": "Is the credential valid" }
+        },
+        "required": ["warnings", "errors", "verified"]
+      },
       "ProofPurpose": {
         "type": "string",
+        "description": "The purpose of the proof. Default 'assertionMethod'.",
         "enum": [
           "assertionMethod",
           "authentication",
@@ -811,54 +832,6 @@
           "capabilityInvocation",
           "capabilityDelegation"
         ]
-      },
-      "VerifyOptionsDto": {
-        "type": "object",
-        "properties": {
-          "verificationMethod": {
-            "type": "string",
-            "description": "The URI of the verificationMethod used for the proof. Default assertionMethod URI."
-          },
-          "proofPurpose": {
-            "description": "The purpose of the proof. Default 'assertionMethod'.",
-            "$ref": "#/components/schemas/ProofPurpose"
-          },
-          "created": {
-            "type": "string",
-            "description": "The date and time of the proof (with a maximum accuracy in seconds). Default current system time."
-          },
-          "challenge": {
-            "type": "string",
-            "description": "A challenge provided by the requesting party of the proof. For example 6e62f66e-67de-11eb-b490-ef3eeefa55f2"
-          },
-          "domain": {
-            "type": "string",
-            "description": "The intended domain of validity for the proof. For example website.example"
-          }
-        }
-      },
-      "VerifyCredentialDto": {
-        "type": "object",
-        "properties": {
-          "verifiableCredential": {
-            "description": "A JSON-LD Verifiable Credential with a proof. https://w3c-ccg.github.io/vc-api/issuer.html#operation/issueCredential",
-            "allOf": [{ "$ref": "#/components/schemas/VerifiableCredentialDto" }]
-          },
-          "options": {
-            "description": "Parameters for verifying a verifiable credential or a verifiable presentation https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyCredential https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyPresentation",
-            "allOf": [{ "$ref": "#/components/schemas/VerifyOptionsDto" }]
-          }
-        },
-        "required": ["verifiableCredential", "options"]
-      },
-      "VerificationResultDto": {
-        "type": "object",
-        "properties": {
-          "checks": { "description": "The checks performed", "type": "array", "items": { "type": "string" } },
-          "warnings": { "description": "Warnings", "type": "array", "items": { "type": "string" } },
-          "errors": { "description": "Errors", "type": "array", "items": { "type": "string" } }
-        },
-        "required": ["checks", "warnings", "errors"]
       },
       "ProvePresentationOptionsDto": {
         "type": "object",
@@ -871,10 +844,7 @@
             "type": "string",
             "description": "The URI of the verificationMethod used for the proof. Default assertionMethod URI."
           },
-          "proofPurpose": {
-            "description": "The purpose of the proof. Default 'assertionMethod'.",
-            "$ref": "#/components/schemas/ProofPurpose"
-          },
+          "proofPurpose": { "$ref": "#/components/schemas/ProofPurpose" },
           "created": {
             "type": "string",
             "description": "The date and time of the proof (with a maximum accuracy in seconds). Default current system time."
@@ -969,6 +939,28 @@
         },
         "required": ["presentation", "options"]
       },
+      "VerifyOptionsDto": {
+        "type": "object",
+        "properties": {
+          "verificationMethod": {
+            "type": "string",
+            "description": "The URI of the verificationMethod used for the proof. Default assertionMethod URI."
+          },
+          "proofPurpose": { "$ref": "#/components/schemas/ProofPurpose" },
+          "created": {
+            "type": "string",
+            "description": "The date and time of the proof (with a maximum accuracy in seconds). Default current system time."
+          },
+          "challenge": {
+            "type": "string",
+            "description": "A challenge provided by the requesting party of the proof. For example 6e62f66e-67de-11eb-b490-ef3eeefa55f2"
+          },
+          "domain": {
+            "type": "string",
+            "description": "The intended domain of validity for the proof. For example website.example"
+          }
+        }
+      },
       "VerifyPresentationDto": {
         "type": "object",
         "properties": {
@@ -989,12 +981,7 @@
       },
       "ExchangeInteractServiceDefinitionDto": {
         "type": "object",
-        "properties": {
-          "type": {
-            "description": "The \"type\" of the interact service.\nSee Verifiable Presentation Request [Interaction Types](https://w3c-ccg.github.io/vp-request-spec/#interaction-types) for background.",
-            "$ref": "#/components/schemas/VpRequestInteractServiceType"
-          }
-        },
+        "properties": { "type": { "$ref": "#/components/schemas/VpRequestInteractServiceType" } },
         "required": ["type"]
       },
       "PresentationDefinitionDto": {
@@ -1016,14 +1003,15 @@
         "required": ["presentationDefinition"]
       },
       "VpRequestDidAuthQueryDto": { "type": "object", "properties": {} },
-      "VpRequestQueryType": { "type": "string", "enum": ["DIDAuth", "PresentationDefinition"] },
+      "VpRequestQueryType": {
+        "type": "string",
+        "description": "Query types as listed in the VP Request spec.\nhttps://w3c-ccg.github.io/vp-request-spec/#query-and-response-types\n\nThe \"PresentationDefinition\" type is proposed here: https://github.com/w3c-ccg/vp-request-spec/issues/7",
+        "enum": ["DIDAuth", "PresentationDefinition"]
+      },
       "VpRequestQueryDto": {
         "type": "object",
         "properties": {
-          "type": {
-            "description": "Query types as listed in the VP Request spec.\nhttps://w3c-ccg.github.io/vp-request-spec/#query-and-response-types\n\nThe \"PresentationDefinition\" type is proposed here: https://github.com/w3c-ccg/vp-request-spec/issues/7",
-            "$ref": "#/components/schemas/VpRequestQueryType"
-          },
+          "type": { "$ref": "#/components/schemas/VpRequestQueryType" },
           "credentialQuery": {
             "type": "array",
             "description": "The credential query.\nIt should correspond to the query type.",
@@ -1169,14 +1157,15 @@
         },
         "required": ["transactionId", "exchangeId", "vpRequest"]
       },
-      "ReviewResult": { "type": "string", "enum": ["approved", "rejected"] },
+      "ReviewResult": {
+        "type": "string",
+        "description": "The judgement made by the reviewer",
+        "enum": ["approved", "rejected"]
+      },
       "SubmissionReviewDto": {
         "type": "object",
         "properties": {
-          "result": {
-            "description": "The judgement made by the reviewer",
-            "$ref": "#/components/schemas/ReviewResult"
-          },
+          "result": { "$ref": "#/components/schemas/ReviewResult" },
           "vp": {
             "description": "A reviewer may want to include credentials (wrapped in a VP) to the holder",
             "allOf": [{ "$ref": "#/components/schemas/VerifiablePresentationDto" }]

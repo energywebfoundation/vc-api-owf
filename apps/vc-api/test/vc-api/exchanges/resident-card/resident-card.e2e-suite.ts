@@ -43,7 +43,6 @@ export const residentCardExchangeSuite = () => {
     expect(issuanceExchangeContinuationEndpoint).toContain(issuanceExchangeEndpoint);
 
     // As holder, create new DID and presentation to authentication as this DID
-    // DID auth presentation: https://github.com/spruceid/didkit/blob/c5c422f2469c2c5cc2f6e6d8746e95b552fce3ed/lib/web/src/lib.rs#L382
     const holderDIDDoc = await walletClient.createDID('key');
     const holderVerificationMethod = holderDIDDoc.verificationMethod[0].id;
     const options: ProvePresentationOptionsDto = {
@@ -71,7 +70,7 @@ export const residentCardExchangeSuite = () => {
     const transaction = await walletClient.getExchangeTransaction(exchange.getExchangeId(), transactionId);
 
     // As the issuer, check the result of the transaction verification
-    expect(transaction.presentationSubmission.verificationResult.checks).toContain('proof');
+    expect(transaction.presentationSubmission.verificationResult.verified).toBeTruthy();
     expect(transaction.presentationSubmission.verificationResult.errors).toHaveLength(0);
 
     // As the issuer, create a presentation to provide the credential to the holder

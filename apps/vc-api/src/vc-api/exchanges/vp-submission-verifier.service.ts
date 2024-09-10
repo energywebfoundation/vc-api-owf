@@ -6,11 +6,11 @@
 import { Injectable } from '@nestjs/common';
 import { ProofPurpose, IPresentationDefinition, PEX, IPresentation } from '@sphereon/pex';
 import { CredentialsService } from '../credentials/credentials.service';
-import { VerificationResult } from '../credentials/types/verification-result';
 import { VpRequestEntity } from './entities/vp-request.entity';
 import { SubmissionVerifier } from './types/submission-verifier';
 import { VerifiablePresentation } from './types/verifiable-presentation';
 import { VpRequestQueryType } from './types/vp-request-query-type';
+import { ExchangeVerificationResultDto } from './dtos/exchange-verification-result.dto';
 
 /**
  * Inspired by https://github.com/gataca-io/vui-core/blob/6c599bdf7086f9a702e6657089fa343ae62a417a/service/validatorServiceDIFPE.go
@@ -26,12 +26,15 @@ export class VpSubmissionVerifierService implements SubmissionVerifier {
   public async verifyVpRequestSubmission(
     vp: VerifiablePresentation,
     vpRequest: VpRequestEntity
-  ): Promise<VerificationResult> {
-    const proofVerifiactionResult = await this.verifyPresentationProof(vp, vpRequest.challenge);
+  ): Promise<ExchangeVerificationResultDto> {
+    const proofVerifiactionResult: ExchangeVerificationResultDto = await this.verifyPresentationProof(
+      vp,
+      vpRequest.challenge
+    );
     const vpRequestValidationErrors = this.validatePresentationAgainstVpRequest(vp, vpRequest);
     return {
+      verified: proofVerifiactionResult.verified,
       errors: [...proofVerifiactionResult.errors, ...vpRequestValidationErrors],
-      checks: [...proofVerifiactionResult.checks],
       warnings: []
     };
   }
@@ -39,21 +42,24 @@ export class VpSubmissionVerifierService implements SubmissionVerifier {
   private async verifyPresentationProof(
     vp: VerifiablePresentation,
     challenge: string
-  ): Promise<VerificationResult> {
+  ): Promise<ExchangeVerificationResultDto> {
     const verifyOptions = {
       challenge,
       proofPurpose: ProofPurpose.authentication,
       verificationMethod: vp.proof.verificationMethod as string //TODO: fix types here
     };
     const result = await this.credentialsService.verifyPresentation(vp, verifyOptions);
-    if (!result.checks.includes('proof') || result.errors.length > 0) {
-      return {
-        errors: [`verification of presentation proof not successful`, ...result.errors],
-        checks: [],
-        warnings: []
-      };
-    }
-    return result;
+    return result.verified
+      ? {
+          verified: true,
+          warnings: [],
+          errors: []
+        }
+      : {
+          verified: false,
+          errors: [...result.errors.map((e) => e.title)],
+          warnings: []
+        };
   }
 
   private validatePresentationAgainstVpRequest(

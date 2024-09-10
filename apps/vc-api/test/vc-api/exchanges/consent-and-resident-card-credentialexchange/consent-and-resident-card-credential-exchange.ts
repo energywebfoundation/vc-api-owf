@@ -78,7 +78,8 @@ export class ConsentandResidentCardCredentialIssuance {
       return { errors: ['verification method for issuance not available'] };
     }
     const presentationOptions: ProvePresentationOptionsDto = {
-      verificationMethod: verificationMethodURI
+      verificationMethod: verificationMethodURI,
+      challenge: 'some-challenge'
     };
     const provePresentationDto = {
       options: presentationOptions,
@@ -139,7 +140,8 @@ export class ConsentandResidentCardCredentialIssuance {
       return { errors: ['verification method for issuance not available'] };
     }
     const presentationOptions: ProvePresentationOptionsDto = {
-      verificationMethod: verificationMethodURI
+      verificationMethod: verificationMethodURI,
+      challenge: 'some-challenge'
     };
     const provePresentationDto = {
       options: presentationOptions,

@@ -48,9 +48,10 @@ describe('SeederService', () => {
       let exception: Error;
 
       beforeEach(async function () {
-        mockKeyService.importKey.mockReset()
-          .mockResolvedValueOnce({keyId: "EMALqbXvBBETNa6wjhJbJMAHiLZotMJYT4KnicduGjii"})
-          .mockResolvedValueOnce({keyId: "5M7AxPh4tTF7kJH3yZoi7AUZSVVF8Xi7QWybrX9vNEPx"});
+        mockKeyService.importKey
+          .mockReset()
+          .mockResolvedValueOnce({ keyId: 'EMALqbXvBBETNa6wjhJbJMAHiLZotMJYT4KnicduGjii' })
+          .mockResolvedValueOnce({ keyId: '5M7AxPh4tTF7kJH3yZoi7AUZSVVF8Xi7QWybrX9vNEPx' });
         mockDIDService.registerKeyDID.mockReset();
         try {
           await service.seed();

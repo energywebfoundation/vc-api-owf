@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { IsArray, IsBoolean, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsBoolean, IsOptional, ValidateNested } from 'class-validator';
 import { VerifiablePresentationDto } from '../../credentials/dtos/verifiable-presentation.dto';
 import { VpRequestDto } from './vp-request.dto';
 import { Type } from 'class-transformer';

@@ -14,5 +14,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class VerifiablePresentationDto extends PresentationDto {
   @IsObject()
   @ApiProperty({ description: 'A JSON-LD Linked Data proof.' })
-  proof: Record<string, unknown>;
+  proof: Record<string, unknown> & {
+    challenge?: string;
+  };
 }

@@ -27,7 +27,7 @@ describe('TransactionEntity', () => {
   };
 
   const submissionVerificationResult = {
-    checks: ['proof'],
+    verified: true,
     warnings: [],
     errors: []
   };

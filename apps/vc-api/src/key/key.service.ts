@@ -6,7 +6,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { IGenerateKey, IGenerateKeyOptions, IKeyDescription } from '@energyweb/w3c-ccg-webkms';
 import { KeyType, WalletCreateKeyOptions, Buffer } from '@credo-ts/core';
-import { Jwk, Key, KeyEntryObject } from "@hyperledger/aries-askar-shared";
+import { Jwk, Key, KeyEntryObject } from '@hyperledger/aries-askar-shared';
 import { generateKeyPair, exportJWK, GenerateKeyPairResult, JWK, importJWK } from 'jose';
 import { InjectRepository } from '@nestjs/typeorm';
 import { KeyPair } from './key-pair.entity';
@@ -55,10 +55,12 @@ export class KeyService implements IGenerateKey {
    *
    */
   public async getPublicKeyFromKeyId(keyId: string): Promise<JWK> {
-    const keyPair = await this.fetchKey(keyId)
-    return keyPair ? {
-      ...keyPair?.key.jwkPublic
-    } : undefined;
+    const keyPair = await this.fetchKey(keyId);
+    return keyPair
+      ? {
+          ...keyPair?.key.jwkPublic
+        }
+      : undefined;
   }
 
   /**
@@ -70,10 +72,12 @@ export class KeyService implements IGenerateKey {
    * @returns private JWK of the key pair
    */
   public async getPrivateKeyFromKeyId(keyId: string): Promise<JWK> {
-    const keyPair = await this.fetchKey(keyId)
-    return keyPair ? {
-      ...keyPair?.key.jwkSecret
-    } : undefined;
+    const keyPair = await this.fetchKey(keyId);
+    return keyPair
+      ? {
+          ...keyPair?.key.jwkSecret
+        }
+      : undefined;
   }
 
   /**
@@ -96,9 +100,9 @@ export class KeyService implements IGenerateKey {
 
       // if key already exists in the wallet
       // returns keyId i.e. publicKeyBase58
-      if(keyExists != null) {
+      if (keyExists != null) {
         return {
-          keyId: publicKeyBase58,
+          keyId: publicKeyBase58
         };
       }
 
@@ -113,29 +117,27 @@ export class KeyService implements IGenerateKey {
       return {
         publicKey: {
           ...key.key.jwkPublic,
-          kid: keyDescription.keyId,
+          kid: keyDescription.keyId
         },
-        privateKey:
-        {
+        privateKey: {
           ...key.key.jwkSecret
         }
-      }
+      };
     }
     return null;
   }
 
   private async saveNewKey(keyGenResult: GenerateKeyPairResult): Promise<IKeyDescription> {
-
     const publicKeyJWK = await exportJWK(keyGenResult.publicKey);
     const privateKeyJWK = await exportJWK(keyGenResult.privateKey);
 
     // Need to check that the properties required by Askar JWK are there
     if (!privateKeyJWK.crv || !privateKeyJWK.x) {
-      throw new Error("Missing required properties from private JWK");
+      throw new Error('Missing required properties from private JWK');
     }
     const jwkProps = { ...privateKeyJWK, kty: 'OKP', crv: privateKeyJWK.crv, x: privateKeyJWK.x };
     const privateAskarJwk = Jwk.fromJson(jwkProps);
-    
+
     const key = Key.fromJwk({ jwk: privateAskarJwk });
 
     if (key.jwkPublic.x !== publicKeyJWK.x) {
@@ -144,26 +146,25 @@ export class KeyService implements IGenerateKey {
 
     const walletKeyCreate: WalletCreateKeyOptions = {
       keyType: KeyType.Ed25519,
-      privateKey: Buffer.from(key.secretBytes),
+      privateKey: Buffer.from(key.secretBytes)
     };
-  
+
     // create key in the Askar Wallet
     const insertedKey = await this.credoService.agent.wallet.createKey(walletKeyCreate);
-    
-     if (insertedKey) {
-      return {
-        keyId: insertedKey?.publicKeyBase58,
-      };
-     }
 
-     throw new Error(`key creation failed`);
+    if (insertedKey) {
+      return {
+        keyId: insertedKey?.publicKeyBase58
+      };
+    }
+
+    throw new Error(`key creation failed`);
   }
 
-  
   public async fetchKey(publicKeyBase58: string): Promise<KeyEntryObject> {
-    return (await this.credoService.wallet.withSession(async (session) => 
-      (await session.fetchKey({ name: publicKeyBase58 }))
-    ));
+    return await this.credoService.wallet.withSession(
+      async (session) => await session.fetchKey({ name: publicKeyBase58 })
+    );
   }
 
   private async generateSecp256k1(): Promise<IKeyDescription> {

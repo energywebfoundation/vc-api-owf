@@ -4,7 +4,13 @@ export const mockCredoService = {
   },
   agent: {
     wallet: {
-        createKey: jest.fn()
+      createKey: jest.fn()
+    },
+    w3cCredentials: {
+      signCredential: jest.fn(),
+      verifyCredential: jest.fn(),
+      signPresentation: jest.fn(),
+      verifyPresentation: jest.fn()
     }
   }
 };

@@ -2,51 +2,34 @@
  * Copyright 2021 - 2023 Energy Web Foundation
  * SPDX-License-Identifier: Apache-2.0
  */
-
 import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
-import {
-  issueCredential,
-  verifyCredential,
-  issuePresentation,
-  verifyPresentation,
-  DIDAuth
-} from '@spruceid/didkit-wasm-node';
-import { JWK } from 'jose';
 import { DIDService } from '../../did/did.service';
-import { KeyService } from '../../key/key.service';
-import { IssueOptionsDto } from './dtos/issue-options.dto';
 import { IssueCredentialDto } from './dtos/issue-credential.dto';
 import { VerifiableCredentialDto } from './dtos/verifiable-credential.dto';
 import { VerifiablePresentationDto } from './dtos/verifiable-presentation.dto';
 import { VerifyOptionsDto } from './dtos/verify-options.dto';
 import { VerificationResultDto } from './dtos/verification-result.dto';
-import { AuthenticateDto } from './dtos/authenticate.dto';
 import { ProvePresentationDto } from './dtos/prove-presentation.dto';
 import { CredentialVerifier } from './types/credential-verifier';
 import { PresentationDto } from './dtos/presentation.dto';
 import { IPresentationDefinition, IVerifiableCredential, PEX, ProofPurpose, Status } from '@sphereon/pex';
 import { VerificationMethod } from 'did-resolver';
-import { ProvePresentationOptionsDto } from './dtos/prove-presentation-options.dto';
-import { didKitExecutor } from './utils/did-kit-executor.function';
-
-/**
- * Credential issuance options that Spruce accepts
- * Full options are here: https://github.com/spruceid/didkit/blob/main/cli/README.md#didkit-vc-issue-credential
- */
-interface ISpruceIssueOptions {
-  proofPurpose: string;
-  verificationMethod: string;
-  created?: string;
-  challenge?: string;
-}
-
-/**
- * Credential verification options that Spruce accepts
- * Full options are here: https://github.com/spruceid/didkit/blob/main/cli/README.md#didkit-vc-verify-credential
- */
-interface ISpruceVerifyOptions {
-  challenge?: string;
-}
+import { CredoService } from '../../credo/credo.service';
+import {
+  ClaimFormat,
+  JsonTransformer,
+  W3cCredential,
+  W3cJsonLdSignCredentialOptions,
+  W3cJsonLdVerifiableCredential,
+  W3cJsonLdVerifiablePresentation,
+  W3cPresentation,
+  W3cSignPresentationOptions,
+  W3cVerifyCredentialOptions,
+  W3cVerifyCredentialResult,
+  W3cVerifyPresentationOptions
+} from '@credo-ts/core';
+import { AuthenticateDto } from './dtos/authenticate.dto';
+import { transformVerificationResult } from './utils/verification-result-transformer';
 
 /**
  * This service provide the VC-API operations
@@ -54,7 +37,7 @@ interface ISpruceVerifyOptions {
  */
 @Injectable()
 export class CredentialsService implements CredentialVerifier {
-  constructor(private didService: DIDService, private keyService: KeyService) {}
+  constructor(private didService: DIDService, private credoService: CredoService) {}
 
   async issueCredential(issueDto: IssueCredentialDto): Promise<VerifiableCredentialDto> {
     const verificationMethod = await this.getVerificationMethodForDid(
@@ -62,33 +45,27 @@ export class CredentialsService implements CredentialVerifier {
         ? issueDto.credential.issuer
         : issueDto.credential.issuer.id
     );
-    const key = await this.getKeyForVerificationMethod(verificationMethod.id);
-    const proofOptions = this.mapVcApiIssueOptionsToSpruceIssueOptions(
-      issueDto.options || ({} as IssueOptionsDto),
-      verificationMethod.id
-    );
-
-    return didKitExecutor<VerifiableCredentialDto>(
-      () =>
-        issueCredential(
-          JSON.stringify(issueDto.credential),
-          JSON.stringify(proofOptions),
-          JSON.stringify(key)
-        ),
-      'issueCredential'
-    );
+    const credentialOption: W3cJsonLdSignCredentialOptions = {
+      credential: W3cCredential.fromJson(issueDto.credential),
+      format: ClaimFormat.LdpVc,
+      proofType: 'Ed25519Signature2018',
+      verificationMethod: verificationMethod.id
+    };
+    const w3cVerifiableCredential =
+      await this.credoService.agent.w3cCredentials.signCredential<ClaimFormat.LdpVc>(credentialOption);
+    return w3cVerifiableCredential.toJson() as VerifiableCredentialDto;
   }
 
-  async verifyCredential(
-    vc: VerifiableCredentialDto,
-    options: VerifyOptionsDto
-  ): Promise<VerificationResultDto> {
-    const verifyOptions: ISpruceVerifyOptions = options;
+  async verifyCredential(vc: VerifiableCredentialDto): Promise<VerificationResultDto> {
+    const w3cVerifyCredentialOptions: W3cVerifyCredentialOptions<ClaimFormat.LdpVc> = {
+      credential: W3cJsonLdVerifiableCredential.fromJson(vc)
+    };
 
-    return didKitExecutor<VerificationResultDto>(
-      () => verifyCredential(JSON.stringify(vc), JSON.stringify(verifyOptions)),
-      'verifyCredential'
-    );
+    // Using "any" until Credo types are fixed https://github.com/openwallet-foundation/credo-ts/issues/2043
+    const verifyCredential: W3cVerifyCredentialResult =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await this.credoService.agent.w3cCredentials.verifyCredential(w3cVerifyCredentialOptions as any);
+    return transformVerificationResult(verifyCredential);
   }
 
   /**
@@ -109,27 +86,6 @@ export class CredentialsService implements CredentialVerifier {
     }
     const presentation = pex.presentationFrom(presentationDefinition, verifiableCredential);
 
-    // embed submission context to workaround failing to load context 'https://identity.foundation/presentation-exchange/submission/v1'
-    const submissionContext = {
-      PresentationSubmission: {
-        '@id': 'https://identity.foundation/presentation-exchange/#presentation-submission',
-        '@context': {
-          '@version': '1.1',
-          presentation_submission: {
-            '@id': 'https://identity.foundation/presentation-exchange/#presentation-submission',
-            '@type': '@json'
-          }
-        }
-      }
-    };
-    const submissionContextUri = 'https://identity.foundation/presentation-exchange/submission/v1';
-
-    presentation['@context'] = Array.isArray(presentation['@context'])
-      ? presentation['@context']
-      : [presentation['@context']];
-
-    presentation['@context'] = presentation['@context'].filter((c) => c !== submissionContextUri);
-    presentation['@context'].push(submissionContext as any);
     return presentation as PresentationDto;
   }
 
@@ -137,18 +93,21 @@ export class CredentialsService implements CredentialVerifier {
     const verificationMethodId =
       provePresentationDto.options.verificationMethod ??
       (await this.getVerificationMethodForDid(provePresentationDto.presentation.holder)).id;
-    const key = await this.getKeyForVerificationMethod(verificationMethodId);
-    const proofOptions = this.mapVcApiPresentationOptionsToSpruceIssueOptions(provePresentationDto.options);
 
-    return didKitExecutor<VerifiablePresentationDto>(
-      () =>
-        issuePresentation(
-          JSON.stringify(provePresentationDto.presentation),
-          JSON.stringify(proofOptions),
-          JSON.stringify(key)
-        ),
-      'issuePresentation'
-    );
+    const signPresentationOption: W3cSignPresentationOptions<ClaimFormat.LdpVp> = {
+      presentation: this.transformToCredoPresentation(provePresentationDto.presentation, W3cPresentation),
+      challenge: provePresentationDto.options.challenge,
+      verificationMethod: verificationMethodId,
+      format: ClaimFormat.LdpVp,
+      proofType: 'Ed25519Signature2018',
+      proofPurpose: provePresentationDto.options.proofPurpose
+    };
+    const w3cVerifiablePresentation =
+      await this.credoService.agent.w3cCredentials.signPresentation<ClaimFormat.LdpVp>(
+        signPresentationOption
+      );
+
+    return w3cVerifiablePresentation.toJson() as VerifiablePresentationDto;
   }
 
   /**
@@ -159,30 +118,32 @@ export class CredentialsService implements CredentialVerifier {
     if (authenticateDto.options.proofPurpose !== ProofPurpose.authentication) {
       throw new BadRequestException('proof purpose must be authentication for DIDAuth');
     }
+    const signPresentationDto: ProvePresentationDto = {
+      presentation: {
+        '@context': ['https://www.w3.org/2018/credentials/v1'],
+        type: ['VerifiablePresentation'],
+        holder: authenticateDto.did
+      },
+      options: authenticateDto.options
+    };
 
-    const verificationMethodId =
-      authenticateDto.options.verificationMethod ??
-      (await this.getVerificationMethodForDid(authenticateDto.did)).id;
+    const signed = await this.provePresentation(signPresentationDto);
 
-    const key = await this.getKeyForVerificationMethod(verificationMethodId);
-    const proofOptions = this.mapVcApiPresentationOptionsToSpruceIssueOptions(authenticateDto.options);
-
-    return didKitExecutor<VerifiablePresentationDto>(
-      () => DIDAuth(authenticateDto.did, JSON.stringify(proofOptions), JSON.stringify(key)),
-      'DIDAuth'
-    );
+    return signed;
   }
 
   async verifyPresentation(
     vp: VerifiablePresentationDto,
     options: VerifyOptionsDto
   ): Promise<VerificationResultDto> {
-    const verifyOptions: ISpruceVerifyOptions = options;
-
-    return didKitExecutor<VerificationResultDto>(
-      () => verifyPresentation(JSON.stringify(vp), JSON.stringify(verifyOptions)),
-      'verifyPresentation'
+    const w3cVerifyPresentationOptions: W3cVerifyPresentationOptions = {
+      presentation: this.transformToCredoPresentation(vp, W3cJsonLdVerifiablePresentation),
+      challenge: options.challenge ?? vp.proof.challenge
+    };
+    const verifyPresentation = await this.credoService.agent.w3cCredentials.verifyPresentation(
+      w3cVerifyPresentationOptions
     );
+    return transformVerificationResult(verifyPresentation);
   }
 
   private async getVerificationMethodForDid(did: string): Promise<VerificationMethod> {
@@ -196,60 +157,20 @@ export class CredentialsService implements CredentialVerifier {
   }
 
   /**
-   * TODO: Maybe we should check if the issuer of the credential controls the associated verification method
-   * @param desiredVerificationMethod
-   * @returns the privateKey that can issue proofs as the verification method
+   * Credo is expecting the the verifiableCredential property in a presentation.
+   * However, this property is optional in both the v1.1 and v2 VC data models.
+   * For example, it isn't present if the presentation is only for authentication.
+   * Credo issue to resolve underlying cause: https://github.com/openwallet-foundation/credo-ts/issues/2038
+   * @param presentation presentation to transform to a Credo type
+   * @param targetClass the desired Credo type
+   * @returns instance of targetClass
    */
-  private async getKeyForVerificationMethod(desiredVerificationMethodId: string): Promise<JWK> {
-    const verificationMethod = await this.didService.getVerificationMethod(desiredVerificationMethodId);
-    if (!verificationMethod) {
-      throw new InternalServerErrorException('This verification method is not known to this wallet');
-    }
-    const keyID = verificationMethod.publicKeyJwk?.kid;
-    if (!keyID) {
-      throw new InternalServerErrorException(
-        'There is no key ID (kid) associated with this verification method. Unable to retrieve private key'
-      );
-    }
-    const privateKey = await this.keyService.getPrivateKeyFromKeyId(keyID);
-    if (!privateKey) {
-      throw new InternalServerErrorException('Unable to retrieve private key for this verification method');
-    }
-    return privateKey;
-  }
-
-  /**
-   * As the Spruce proof issuance options may not align perfectly with the VC-API spec issuanceOptions,
-   * this method provides a translation between the two
-   * @param options
-   * @returns
-   */
-  private mapVcApiIssueOptionsToSpruceIssueOptions(
-    options: IssueOptionsDto,
-    verificationMethodId: string
-  ): ISpruceIssueOptions {
-    return {
-      proofPurpose: ProofPurpose.assertionMethod, // Issuance is always an "assertion" proof, AFAIK
-      verificationMethod: verificationMethodId,
-      created: options.created,
-      challenge: options.challenge
-    };
-  }
-
-  /**
-   * As the Spruce proof presentation options may not align perfectly with the VC-API spec provePresentationOptions,
-   * this method provides a translation between the two
-   * @param options
-   * @returns
-   */
-  private mapVcApiPresentationOptionsToSpruceIssueOptions(
-    options: ProvePresentationOptionsDto
-  ): ISpruceIssueOptions {
-    return {
-      proofPurpose: options.proofPurpose,
-      verificationMethod: options.verificationMethod,
-      created: options.created,
-      challenge: options.challenge
-    };
+  private transformToCredoPresentation<T extends W3cPresentation>(
+    presentation,
+    targetClass: new (...args: unknown[]) => T
+  ): T {
+    return JsonTransformer.fromJSON(presentation, targetClass, {
+      validate: !(presentation.verifiableCredential === undefined)
+    });
   }
 }

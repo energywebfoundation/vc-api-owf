@@ -38,7 +38,6 @@
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.17",
     "better-sqlite3": "~8.4.0",
-    "@spruceid/didkit-wasm-node": "~0.2.1",
     "did-resolver": "~4.1.0",
     "class-validator": "~0.14.0",
     "class-transformer": "~0.5.1",

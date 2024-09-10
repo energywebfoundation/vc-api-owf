@@ -29,7 +29,7 @@ const vp = {
 };
 
 const submissionVerificationResult = {
-  checks: ['proof'],
+  verified: true,
   warnings: [],
   errors: []
 };
@@ -241,7 +241,6 @@ describe('ExchangeService', () => {
 
           it('should contain correct verificationResult', async function () {
             expect(presentationSubmission.verificationResult).toEqual({
-              checks: ['proof'],
               errors: [],
               warnings: []
             });
@@ -290,7 +289,7 @@ describe('ExchangeService', () => {
 
       beforeEach(async function () {
         jest.spyOn(mockSubmissionVerifier, 'verifyVpRequestSubmission').mockResolvedValue({
-          checks: [],
+          verified: false,
           warnings: [],
           errors: ['error 1', 'error 2', 'error 3']
         });

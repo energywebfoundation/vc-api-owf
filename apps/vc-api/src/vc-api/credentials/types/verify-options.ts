@@ -9,6 +9,6 @@
  * - https://w3c-ccg.github.io/vc-api/verifier.html#operation/verifyPresentation
  */
 export interface VerifyOptions {
-  challenge?: string;
+  challenge: string;
   proofPurpose?: string;
 }

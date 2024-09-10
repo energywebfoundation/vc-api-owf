@@ -6,6 +6,6 @@ import { CredoService } from './credo.service';
 @Module({
   imports: [ConfigModule],
   providers: [CredoService],
-  exports: [CredoService],
+  exports: [CredoService]
 })
 export class CredoModule {}

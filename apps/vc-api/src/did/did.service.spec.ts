@@ -33,8 +33,8 @@ describe('DIDService', () => {
         DIDService,
         {
           provide: CredoService,
-          useValue: mockCredoService,
-        },
+          useValue: mockCredoService
+        }
       ]
     }).compile();
 

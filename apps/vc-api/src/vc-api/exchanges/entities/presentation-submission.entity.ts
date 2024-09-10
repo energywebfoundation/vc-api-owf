@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { VerificationResult } from '../../credentials/types/verification-result';
+import { ExchangeVerificationResult } from '../types/exchange-verification-result';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { VerifiablePresentation } from '../types/verifiable-presentation';
 
@@ -15,7 +15,7 @@ import { VerifiablePresentation } from '../types/verifiable-presentation';
  */
 @Entity()
 export class PresentationSubmissionEntity {
-  constructor(vp: VerifiablePresentation, verificationResult: VerificationResult) {
+  constructor(vp: VerifiablePresentation, verificationResult: ExchangeVerificationResult) {
     this.vpHolder = vp?.holder;
     this.verificationResult = verificationResult;
   }
@@ -27,7 +27,7 @@ export class PresentationSubmissionEntity {
    * The result of the verification of the submitted VP
    */
   @Column('simple-json')
-  verificationResult: VerificationResult;
+  verificationResult: ExchangeVerificationResult;
 
   @Column('text', { nullable: true })
   vpHolder: string;

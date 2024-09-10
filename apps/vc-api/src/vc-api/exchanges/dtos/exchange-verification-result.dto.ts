@@ -3,24 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { IsArray } from 'class-validator';
-import { VerificationResult } from '../types/verification-result';
+import { IsArray, IsString } from 'class-validator';
+import { ExchangeVerificationResult } from '../types/exchange-verification-result';
 import { ApiProperty } from '@nestjs/swagger';
-import { ProblemDetail } from '../types/problem-detail';
 
 /**
  * A response object from verification of a credential or a presentation.
  * https://w3c-ccg.github.io/vc-api/verifier.html
  */
-export class VerificationResultDto implements VerificationResult {
+export class ExchangeVerificationResultDto implements ExchangeVerificationResult {
   @IsArray()
+  @IsString({ each: true })
   @ApiProperty({ description: 'Warnings' })
-  warnings?: ProblemDetail[];
+  warnings: string[];
 
   @IsArray()
+  @IsString({ each: true })
   @ApiProperty({ description: 'Errors' })
-  errors?: ProblemDetail[];
+  errors: string[];
 
   @ApiProperty({ description: 'Is the credential valid' })
-  verified?: boolean;
+  verified: boolean;
 }
