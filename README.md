@@ -35,6 +35,12 @@ const did = generateDID(key); // Code from ssi-did lib. Returns initial DID Docu
 #### KMS Interface
 
 ## Technology Decisions
+
+Architecture Decision Records are used to track technology and architecture decsions
+(see [ADR 01](./apps/vc-api/docs/architecture/decisions/0001-record-architecture-decisions.md)).
+
+The Architecture Decisions Records can be found [here](apps/vc-api/docs/architecture/decisions).
+
 ### Rationale for Spruce DIDKit
 Spruce's DIDKit is used for DID generation and credential issuance & verification.
 The rational for DIDKit's use is that it:
