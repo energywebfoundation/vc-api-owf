@@ -41,13 +41,7 @@ Architecture Decision Records are used to track technology and architecture decs
 
 The Architecture Decisions Records can be found [here](apps/vc-api/docs/architecture/decisions).
 
-### Rationale for Spruce DIDKit
-Spruce's DIDKit is used for DID generation and credential issuance & verification.
-The rational for DIDKit's use is that it:
-- Is written in Rust and so suitable for use in any mobile app development framework
-- Supports JSON-LD and JWT credential issuance and verification
-- Supports did:key, did:ethr, did:web
-- DIDKit (and its libraries) are open-source
+The [ADR Tools command line tool](https://github.com/npryce/adr-tools) can be used to add new ADRs.
 
 ## Installation
 This repository is a monorepo that uses [Rush](https://rushjs.io/) with the PNPM package manager.
