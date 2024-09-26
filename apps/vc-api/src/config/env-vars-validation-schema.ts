@@ -4,6 +4,7 @@
  */
 
 import * as Joi from 'joi';
+import { homedir } from 'os';
 
 export const envVarsValidationSchema = Joi.object({
   NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
@@ -12,5 +13,6 @@ export const envVarsValidationSchema = Joi.object({
   CREDO_LABEL: Joi.string().default('vc-api-agent'),
   CREDO_WALLET_ID: Joi.string().default('vc-api-wallet'),
   CREDO_WALLET_KEY: Joi.string().default('vc-api-wallet-key-0001'),
-  CREDO_WALLET_DB_TYPE: Joi.string().default('sqlite')
+  CREDO_WALLET_DB_TYPE: Joi.string().default('sqlite'),
+  DB_BASE_PATH: Joi.string().default(`${homedir}/.vc-api`)
 });

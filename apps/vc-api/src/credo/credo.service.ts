@@ -17,7 +17,12 @@ export class CredoService implements OnModuleInit, OnModuleDestroy {
       id: this.configService.get<string>('CREDO_WALLET_ID'),
       key: this.configService.get<string>('CREDO_WALLET_KEY'),
       storage: {
-        type: this.configService.get<string>('CREDO_WALLET_DB_TYPE')
+        type: this.configService.get<string>('CREDO_WALLET_DB_TYPE'),
+        config: {
+          path: `${this.configService.get<string>('DB_BASE_PATH')}/${this.configService.get<string>(
+            'CREDO_WALLET_ID'
+          )}/sqlite.db`
+        }
       }
     };
 
@@ -84,7 +89,7 @@ export class CredoService implements OnModuleInit, OnModuleDestroy {
   private async cleanup() {
     if (this.agent.isInitialized) {
       // close askar agent connection
-      await this.agent.wallet.close();
+      await this.wallet.close();
       await this.agent.shutdown();
     }
   }

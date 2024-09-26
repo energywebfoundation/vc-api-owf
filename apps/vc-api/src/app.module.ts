@@ -8,7 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { KeyModule } from './key/key.module';
 import { DidModule } from './did/did.module';
 import { VcApiModule } from './vc-api/vc-api.module';
-import { TypeOrmSQLiteModule } from './in-memory-db';
+import { TypeOrmSQLiteModule } from './db-config';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SeederModule } from './seeder/seeder.module';

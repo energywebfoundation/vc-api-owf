@@ -5,7 +5,7 @@
 
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { TypeOrmSQLiteModule } from '../in-memory-db';
+import { TypeOrmSQLiteModule } from '../db-config';
 import { KeyModule } from '../key/key.module';
 import { DIDController } from './did.controller';
 import { DIDService } from './did.service';
@@ -21,7 +21,7 @@ describe('DidController', () => {
       imports: [
         KeyModule,
         CredoModule,
-        TypeOrmSQLiteModule(),
+        TypeOrmSQLiteModule(true),
         TypeOrmModule.forFeature([DIDDocumentEntity, VerificationMethodEntity])
       ],
       controllers: [DIDController],

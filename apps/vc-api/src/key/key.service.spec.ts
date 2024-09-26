@@ -6,7 +6,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JWK } from 'jose';
-import { TypeOrmSQLiteModule } from '../in-memory-db';
+import { TypeOrmSQLiteModule } from '../db-config';
 import { KeyPair } from './key-pair.entity';
 import { KeyService } from './key.service';
 import { CredoModule } from '../credo/credo.module';
@@ -22,7 +22,7 @@ describe('KeyService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [TypeOrmSQLiteModule(), TypeOrmModule.forFeature([KeyPair]), CredoModule],
+      imports: [TypeOrmSQLiteModule(true), TypeOrmModule.forFeature([KeyPair]), CredoModule],
       providers: [
         KeyService,
         {

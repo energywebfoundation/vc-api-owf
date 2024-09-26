@@ -6,7 +6,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DIDKeyFactory } from '@energyweb/ssi-did';
-import { TypeOrmSQLiteModule } from '../in-memory-db';
+import { TypeOrmSQLiteModule } from '../db-config';
 import { KeyModule } from '../key/key.module';
 import { KeyService } from '../key/key.service';
 import { DIDService } from './did.service';
@@ -26,7 +26,7 @@ describe('DIDService', () => {
       imports: [
         KeyModule,
         CredoModule,
-        TypeOrmSQLiteModule(),
+        TypeOrmSQLiteModule(true),
         TypeOrmModule.forFeature([DIDDocumentEntity, VerificationMethodEntity])
       ],
       providers: [
