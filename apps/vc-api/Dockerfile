@@ -1,10 +1,8 @@
-FROM node:18.19-alpine as base
+FROM node:18.19 as base
 
 WORKDIR /app
 
 FROM base as builder
-
-RUN apk add g++ make py3-pip
 
 COPY common common
 COPY rush.json .
