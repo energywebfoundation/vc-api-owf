@@ -169,8 +169,3 @@ A tutorial demonstrating this available here: [Key Export/Import Tutorial](./doc
 SQLite is used as the database engine.
 See [ADR-003](./docs/architecture/decisions/0003-use-sqlite-for-credo-db.md) for rationale details.
 Databases can be found at the `~/.vc-api`, by default.
-
-## License
-
-This project is licensed under the GNU General Public License v3.0 or later - see the [LICENSE](LICENSE) file for details
-NestJs is [MIT licensed](LICENSE).
