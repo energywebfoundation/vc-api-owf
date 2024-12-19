@@ -1,17 +1,6 @@
-# Welcome to MkDocs
+# OWF VC API Implementation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+## Introduction
+This repository provides a NestJs  [VC API implementation](./apps/vc-api/) of the [W3C Credentials Community Group](https://w3c-ccg.github.io/) [VC API Specification](https://w3c-ccg.github.io/vc-api).
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+This is project is a Labs project under the [Open Wallet Foundation](https://openwallet.foundation/).
