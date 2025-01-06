@@ -1,6 +1,22 @@
 # OWF VC API Implementation
 
 ## Introduction
-This repository provides a NestJs  [VC API implementation](./apps/vc-api/) of the [W3C Credentials Community Group](https://w3c-ccg.github.io/) [VC API Specification](https://w3c-ccg.github.io/vc-api).
+The [VC API implementation project](https://github.com/openwallet-foundation-labs/vc-api) provides a NestJs implementation of the [W3C Credentials Community Group](https://w3c-ccg.github.io/) [VC API Specification](https://w3c-ccg.github.io/vc-api).
 
 This is project is a Labs project under the [Open Wallet Foundation](https://openwallet.foundation/).
+
+## What is the VC API?
+Verifiable Credentials (VCs) are [a W3C standard](https://www.w3.org/TR/vc-data-model/) for expressing credentials which are machine readable and whose authenticity can be verified.
+The VC API is a shared interface for Verifiable Credential lifecycle management.
+This means that VC API can be used by an organization or user to issue and verify VCs as well as exchange VCs with other organizations or users.
+
+## Why use VC API?
+- **Interoperability**: VC API provides a specified interface for VC lifecycle management. This means that if you design your system to use VC API, you can reduce the changes and knowledge required to switch to a different implementation. A list of some implementations of VC API can be found at [canivc.com](canivc.com) (this project can be found under "EWF"). 
+- **Modularity** 
+- **Simplicity**
+- **Composability**
+- **Extensibility**
+
+## Why use this implementation?
+- **Open Source**: This implementation is open source and free to use, under an Apache 2.0 license.
+- **Integration with OWF**: This implementation is part of the Open Wallet Foundation ecosystem and strives to be compatible with other OWF projects. In particular, this implementation uses the [OWF Credo project](https://github.com/openwallet-foundation/credo-ts) as the underlying project for credential operations.
