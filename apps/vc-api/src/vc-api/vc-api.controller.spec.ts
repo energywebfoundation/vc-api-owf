@@ -7,6 +7,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { VcApiController } from './vc-api.controller';
 import { CredentialsService } from './credentials/credentials.service';
 import { ExchangeService } from './exchanges/exchange.service';
+import { WorkflowService } from './workflows/workflow.service';
 
 describe('VcApiController', () => {
   let controller: VcApiController;
@@ -21,6 +22,10 @@ describe('VcApiController', () => {
         },
         {
           provide: ExchangeService,
+          useValue: {}
+        },
+        {
+          provide: WorkflowService,
           useValue: {}
         }
       ]
