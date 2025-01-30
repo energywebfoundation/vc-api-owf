@@ -30,6 +30,7 @@ import { mockCredoService } from '../../credo/__mocks__/credo.service';
 import { CredoModule } from '../../credo/credo.module';
 import {
   JsonTransformer,
+  ProblemReportError,
   W3cJsonLdVerifiableCredential,
   W3cJsonLdVerifiablePresentation
 } from '@credo-ts/core';
@@ -217,7 +218,7 @@ describe('CredentialsService', () => {
       .spyOn(mockCredoService.agent.w3cCredentials, 'verifyCredential')
       .mockResolvedValue({ isValid: true });
     const result = await service.verifyCredential(energyContractVerifiableCredential);
-    const expectedResult = { verified: true, errors: [], warnings: [] };
+    const expectedResult = { verified: true, errors: [], warnings: [], problemDetails: [] };
     expect(result).toEqual(expectedResult);
   });
 
@@ -231,7 +232,7 @@ describe('CredentialsService', () => {
       .spyOn(mockCredoService.agent.w3cCredentials, 'verifyPresentation')
       .mockResolvedValue({ isValid: true });
     const result = await service.verifyPresentation(rebeamVerifiablePresentation, verifyOptions);
-    const expectedResult = { verified: true, errors: [], warnings: [] };
+    const expectedResult = { verified: true, errors: [], warnings: [], problemDetails: [] };
     expect(result).toEqual(expectedResult);
   });
 });

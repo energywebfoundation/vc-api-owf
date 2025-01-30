@@ -12,16 +12,23 @@ import { ProblemDetail } from './problem-detail';
 export interface VerificationResult {
   /**
    * Warnings
+   * Deprecated: replaced by problem details
    */
   warnings?: ProblemDetail[];
 
   /**
    * Errors
+   * Deprecated: replaced by problem details
    */
   errors?: ProblemDetail[];
 
   /**
+   * Problem details
+   */
+  problemDetails: ProblemDetail[];
+
+  /**
    * Verification status
    */
-  verified?: boolean;
+  verified: boolean;
 }
