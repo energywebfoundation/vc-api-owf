@@ -1123,7 +1123,6 @@
           },
           "problemDetails": {
             "description": "Problem Details",
-            "deprecated": true,
             "type": "array",
             "items": { "type": "string" }
           },

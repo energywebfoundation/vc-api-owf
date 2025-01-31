@@ -3,19 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ExchangeVerificationResult } from './exchange-verification-result';
+import { VerificationResult } from '../../credentials/types/verification-result';
 // TODO: move to a common place (can probably be in the credentials module)
 import { VerifiablePresentation } from '../../exchanges/types/verifiable-presentation';
 
 export class PresentationSubmission {
-  constructor(vp: VerifiablePresentation, verificationResult: ExchangeVerificationResult) {
+  constructor(vp: VerifiablePresentation, verificationResult: VerificationResult) {
     this.verifiablePresentation = vp;
     this.verificationResult = verificationResult;
   }
   /**
    * The result of the verification of the submitted VP
    */
-  verificationResult: ExchangeVerificationResult;
+  verificationResult: VerificationResult;
 
   verifiablePresentation: VerifiablePresentation;
 }

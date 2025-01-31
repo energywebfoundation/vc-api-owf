@@ -15,14 +15,14 @@ import { ProblemDetail } from '../types/problem-detail';
 export class VerificationResultDto implements VerificationResult {
   @IsArray()
   @ApiProperty({ description: 'Warnings', deprecated: true })
-  warnings?: ProblemDetail[];
+  warnings?: string[];
 
   @IsArray()
   @ApiProperty({ description: 'Errors', deprecated: true })
-  errors?: ProblemDetail[];
+  errors?: string[];
 
   @IsArray()
-  @ApiProperty({ description: 'Problem Details', deprecated: true })
+  @ApiProperty({ description: 'Problem Details' })
   problemDetails: ProblemDetail[];
 
   @ApiProperty({

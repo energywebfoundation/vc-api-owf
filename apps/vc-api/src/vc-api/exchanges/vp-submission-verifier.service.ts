@@ -10,7 +10,7 @@ import { VpRequestEntity } from './entities/vp-request.entity';
 import { SubmissionVerifier } from './types/submission-verifier';
 import { VerifiablePresentation } from './types/verifiable-presentation';
 import { VpRequestQueryType } from './types/vp-request-query-type';
-import { ExchangeVerificationResultDto } from './dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../credentials/dtos/verification-result.dto';
 
 /**
  * Inspired by https://github.com/gataca-io/vui-core/blob/6c599bdf7086f9a702e6657089fa343ae62a417a/service/validatorServiceDIFPE.go
@@ -26,40 +26,36 @@ export class VpSubmissionVerifierService implements SubmissionVerifier {
   public async verifyVpRequestSubmission(
     vp: VerifiablePresentation,
     vpRequest: VpRequestEntity
-  ): Promise<ExchangeVerificationResultDto> {
-    const proofVerifiactionResult: ExchangeVerificationResultDto = await this.verifyPresentationProof(
+  ): Promise<VerificationResultDto> {
+    const proofVerifiactionResult: VerificationResultDto = await this.verifyPresentationProof(
       vp,
       vpRequest.challenge
     );
     const vpRequestValidationErrors = this.validatePresentationAgainstVpRequest(vp, vpRequest);
+    const errors = [...proofVerifiactionResult.errors, ...vpRequestValidationErrors];
+    const problemDetails = [
+      ...proofVerifiactionResult.problemDetails,
+      ...vpRequestValidationErrors.map((error) => ({ title: error }))
+    ];
     return {
       verified: proofVerifiactionResult.verified,
-      errors: [...proofVerifiactionResult.errors, ...vpRequestValidationErrors],
-      warnings: []
+      errors,
+      warnings: [],
+      problemDetails
     };
   }
 
   private async verifyPresentationProof(
     vp: VerifiablePresentation,
     challenge: string
-  ): Promise<ExchangeVerificationResultDto> {
+  ): Promise<VerificationResultDto> {
     const verifyOptions = {
       challenge,
       proofPurpose: ProofPurpose.authentication,
       verificationMethod: vp.proof.verificationMethod as string //TODO: fix types here
     };
     const result = await this.credentialsService.verifyPresentation(vp, verifyOptions);
-    return result.verified
-      ? {
-          verified: true,
-          warnings: [],
-          errors: []
-        }
-      : {
-          verified: false,
-          errors: [...result.errors.map((e) => e.title)],
-          warnings: []
-        };
+    return result;
   }
 
   private validatePresentationAgainstVpRequest(

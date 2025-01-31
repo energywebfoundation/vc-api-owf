@@ -7,7 +7,7 @@ import { ExchangeResponseDto } from '../dtos/exchange-response.dto';
 import { CallbackConfiguration } from './callback-configuration';
 import { VerifiablePresentation } from '../types/verifiable-presentation';
 import { SubmissionVerifier } from './submission-verifier';
-import { ExchangeVerificationResultDto } from '../dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../../credentials/dtos/verification-result.dto';
 
 export const EXCHANGE_STEP_STATES = {
   IN_PROGRESS: 'in-progress',
@@ -32,7 +32,7 @@ export abstract class ExchangeStep {
   public abstract processPresentation(
     presentation: VerifiablePresentation,
     verifier: SubmissionVerifier
-  ): Promise<{ errors: string[]; verificationResult: ExchangeVerificationResultDto }>;
+  ): Promise<{ errors: string[]; verificationResult: VerificationResultDto }>;
 
   public abstract getStepResponse(): ExchangeResponseDto;
 

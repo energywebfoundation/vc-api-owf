@@ -30,7 +30,6 @@ import { mockCredoService } from '../../credo/__mocks__/credo.service';
 import { CredoModule } from '../../credo/credo.module';
 import {
   JsonTransformer,
-  ProblemReportError,
   W3cJsonLdVerifiableCredential,
   W3cJsonLdVerifiablePresentation
 } from '@credo-ts/core';

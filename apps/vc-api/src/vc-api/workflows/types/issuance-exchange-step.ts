@@ -7,7 +7,7 @@ import { VerifiablePresentation } from '../types/verifiable-presentation';
 import { CallbackConfiguration } from './callback-configuration';
 import { ExchangeStep } from './exchange-step';
 import { ExchangeResponseDto } from '../dtos/exchange-response.dto';
-import { ExchangeVerificationResultDto } from '../dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../../credentials/dtos/verification-result.dto';
 
 export class IssuanceExchangeStep extends ExchangeStep {
   constructor(stepId: string, callback: CallbackConfiguration[], holderRedirectUrl: string) {
@@ -30,7 +30,7 @@ export class IssuanceExchangeStep extends ExchangeStep {
    */
   public processPresentation(): Promise<{
     errors: string[];
-    verificationResult: ExchangeVerificationResultDto;
+    verificationResult: VerificationResultDto;
   }> {
     return Promise.resolve({
       errors: [],

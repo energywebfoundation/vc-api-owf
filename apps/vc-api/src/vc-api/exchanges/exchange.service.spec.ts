@@ -31,7 +31,8 @@ const vp = {
 const submissionVerificationResult = {
   verified: true,
   warnings: [],
-  errors: []
+  errors: [],
+  problemDetails: []
 };
 
 const mockSubmissionVerifier: SubmissionVerifier = {
@@ -242,7 +243,8 @@ describe('ExchangeService', () => {
           it('should contain correct verificationResult', async function () {
             expect(presentationSubmission.verificationResult).toEqual({
               errors: [],
-              warnings: []
+              warnings: [],
+              problemDetails: []
             });
           });
 
@@ -288,10 +290,12 @@ describe('ExchangeService', () => {
       let exceptionThrown: Error;
 
       beforeEach(async function () {
+        const errors = ['error 1', 'error 2', 'error 3'];
         jest.spyOn(mockSubmissionVerifier, 'verifyVpRequestSubmission').mockResolvedValue({
           verified: false,
           warnings: [],
-          errors: ['error 1', 'error 2', 'error 3']
+          errors,
+          problemDetails: errors.map((e) => ({ title: e }))
         });
 
         try {

@@ -11,7 +11,7 @@ import { SubmissionVerifier } from './submission-verifier';
 import { VerifiablePresentation } from '../types/verifiable-presentation';
 import { PresentationSubmission } from './presentation-submission';
 import { Column } from 'typeorm';
-import { ExchangeVerificationResultDto } from '../dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../../credentials/dtos/verification-result.dto';
 
 export class QueryExchangeStep extends ExchangeStep {
   constructor(stepId: string, vpRequest: VpRequestDto, callback: CallbackConfiguration[]) {
@@ -33,7 +33,7 @@ export class QueryExchangeStep extends ExchangeStep {
   public async processPresentation(
     presentation: VerifiablePresentation,
     verifier: SubmissionVerifier
-  ): Promise<{ errors: string[]; verificationResult: ExchangeVerificationResultDto }> {
+  ): Promise<{ errors: string[]; verificationResult: VerificationResultDto }> {
     const verificationResult = await verifier.verifyVpRequestSubmission(presentation, this.vpRequest);
 
     const errors = verificationResult.errors;

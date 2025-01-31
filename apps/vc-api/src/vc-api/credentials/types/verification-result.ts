@@ -14,13 +14,13 @@ export interface VerificationResult {
    * Warnings
    * Deprecated: replaced by problem details
    */
-  warnings?: ProblemDetail[];
+  warnings?: string[];
 
   /**
    * Errors
    * Deprecated: replaced by problem details
    */
-  errors?: ProblemDetail[];
+  errors?: string[];
 
   /**
    * Problem details
