@@ -12,13 +12,17 @@ import { VerificationResultDto } from '../dtos/verification-result.dto';
 export function transformVerificationResult(
   verificationResult: W3cVerifyCredentialResult | W3cVerifyPresentationResult
 ): VerificationResultDto {
+  const errors = verificationResult.isValid ? [] : verificationResult.error['errors'].map((e) => e.message);
+  const warnings = [];
   return {
     verified: verificationResult.isValid,
-    errors: verificationResult.isValid
-      ? []
-      : verificationResult.error['errors'].map((e) => {
-          return { title: e.message };
-        }),
-    warnings: []
+    errors,
+    warnings,
+    problemDetails: [
+      ...errors.map((e) => {
+        return { title: e };
+      }),
+      ...warnings
+    ]
   };
 }

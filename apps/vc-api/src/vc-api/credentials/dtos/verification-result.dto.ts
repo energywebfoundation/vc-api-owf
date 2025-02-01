@@ -14,13 +14,20 @@ import { ProblemDetail } from '../types/problem-detail';
  */
 export class VerificationResultDto implements VerificationResult {
   @IsArray()
-  @ApiProperty({ description: 'Warnings' })
-  warnings?: ProblemDetail[];
+  @ApiProperty({ description: 'Warnings', deprecated: true })
+  warnings?: string[];
 
   @IsArray()
-  @ApiProperty({ description: 'Errors' })
-  errors?: ProblemDetail[];
+  @ApiProperty({ description: 'Errors', deprecated: true })
+  errors?: string[];
 
-  @ApiProperty({ description: 'Is the credential valid' })
-  verified?: boolean;
+  @IsArray()
+  @ApiProperty({ description: 'Problem Details' })
+  problemDetails: ProblemDetail[];
+
+  @ApiProperty({
+    description: `Overall verification assertion of the VerifiableCredential. 
+    This is set to True if no errors were detected during the verification process; otherwise, False.`
+  })
+  verified: boolean;
 }

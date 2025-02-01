@@ -10,11 +10,13 @@ import { VerifiablePresentation } from './types/verifiable-presentation';
 import { VpRequestQuery } from './types/vp-request-query';
 import { VpRequestQueryType } from './types/vp-request-query-type';
 import { VpSubmissionVerifierService } from './vp-submission-verifier.service';
-import { ExchangeVerificationResultDto } from './dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../credentials/dtos/verification-result.dto';
+import { VerificationResult } from '../credentials/types/verification-result';
 
-const presentationVerificationResult = {
+const presentationVerificationResult: VerificationResult = {
   warnings: [],
   errors: [],
+  problemDetails: [],
   verified: true
 };
 
@@ -48,7 +50,7 @@ describe('VpSubmissionVerifierService', () => {
     async function getVerificationResult(
       query: VpRequestQuery[],
       vp: VerifiablePresentation
-    ): Promise<ExchangeVerificationResultDto> {
+    ): Promise<VerificationResultDto> {
       const vpRequest: VpRequestEntity = {
         challenge,
         query,

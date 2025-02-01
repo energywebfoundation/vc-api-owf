@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { ExchangeVerificationResultDto } from '../dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../../credentials/dtos/verification-result.dto';
 import { VpRequestDto } from '../dtos/vp-request.dto';
 // TODO: move to a common place (can probably be in the credentials module)
 import { VerifiablePresentation } from '../../exchanges/types/verifiable-presentation';
@@ -16,5 +16,5 @@ export interface SubmissionVerifier {
   verifyVpRequestSubmission: (
     vp: VerifiablePresentation,
     vpRequest: VpRequestDto
-  ) => Promise<ExchangeVerificationResultDto>;
+  ) => Promise<VerificationResultDto>;
 }

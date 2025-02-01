@@ -1109,11 +1109,29 @@
       "VerificationResultDto": {
         "type": "object",
         "properties": {
-          "warnings": { "description": "Warnings", "type": "array", "items": { "type": "string" } },
-          "errors": { "description": "Errors", "type": "array", "items": { "type": "string" } },
-          "verified": { "type": "boolean", "description": "Is the credential valid" }
+          "warnings": {
+            "description": "Warnings",
+            "deprecated": true,
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "errors": {
+            "description": "Errors",
+            "deprecated": true,
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "problemDetails": {
+            "description": "Problem Details",
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "Overall verification assertion of the VerifiableCredential. \n    This is set to True if no errors were detected during the verification process; otherwise, False."
+          }
         },
-        "required": ["warnings", "errors", "verified"]
+        "required": ["warnings", "errors", "problemDetails", "verified"]
       },
       "ProofPurpose": {
         "type": "string",

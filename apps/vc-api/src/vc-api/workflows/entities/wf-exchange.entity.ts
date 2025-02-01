@@ -14,7 +14,7 @@ import { QueryExchangeStep } from '../types/query-exchange-step';
 import { IssuanceExchangeStep } from '../types/issuance-exchange-step';
 import { ExchangeResponseDto } from '../dtos/exchange-response.dto';
 import { CallbackConfiguration } from '../types/callback-configuration';
-import { ExchangeVerificationResultDto } from '../dtos/exchange-verification-result.dto';
+import { VerificationResultDto } from '../../credentials/dtos/verification-result.dto';
 import { plainToInstance } from 'class-transformer';
 
 /**
@@ -60,7 +60,7 @@ export class WfExchangeEntity {
     response: ExchangeResponseDto;
     errors: string[];
     callback: CallbackConfiguration[];
-    verificationResult: ExchangeVerificationResultDto;
+    verificationResult: VerificationResultDto;
   }> {
     // set the state to active
     this.state = ExchangeState.active;
