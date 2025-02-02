@@ -78,32 +78,22 @@ To maintain a generic implementation for the VC-API, workflows are configured dy
 
 The steps property of a Workflow Definition specifies the sequence of actions to be performed.
 
-Supported step types include:
+The supported step types are:
 
-- Issuance Initiation: Collects data from the Holder to initiate credential issuance.
-- Verification Request: Sends VC data for verification.
-- Credential Review: Allows stakeholders to review and approve VC data.
-- Credential Storage: Saves the VC in a Holder's wallet or storage.
+1. Query: An Issuer or a Verify requests data from a Holder.
+2. Issuance: An Issuer provids one or more VCs to a Holder.
+
+The step type is determined by whether or the step configuration includes a query for data.
+If the step includes a query, the step is a Query step. Otherwise, it is an Issuance step.
 
 #### Workflow Callbacks
 Workflow Definitions can include callbacks to notify parties when specific events occur during the workflow. Callbacks consist of POST requests to the configured URLs.
 
-Example scenarios for callbacks:
-
-- Notification to Issuer upon successful credential issuance.
-- Notification to Verifier upon completion of a verification process.
-
-
-#### Workflow Interaction Types
-
-Workflow interaction types are derived from the Interaction Types specification.
-
-- Mediated Workflows: Include human or automated review steps for issuance or verification.
-- Unmediated Workflows: Automatically process all interactions without external mediation.
+A typical callback scenario is when another services needs to be notified when a presentation is made.
 
 ## Workflow Examples
 
-### Issuance Workflow Example
+### Data Issuance Workflow Example
 
 A mediated issuance workflow involves interactions between the Holder, Workflow Service, and Issuer. The Workflow Service coordinates the collection of Holder data, submission to the Issuer, and issuance of the VC.
 
@@ -111,10 +101,10 @@ Example Workflow Steps:
 
 - Holder initiates issuance request via UI.
 - Workflow collects Holder details (e.g., DID, attributes).
-- Issuer validates data and issues VC.
-- Workflow stores the VC in the Holder’s wallet.
+- Issuer reviews the data and issues VC.
+- Workflow returns the VC to the Holder for storage in their wallet.
 
-### Verification Workflow Example
+### Data Query and Verification Workflow Example
 
 An unmediated verification workflow involves direct submission of VC data to the Verifier.
 
