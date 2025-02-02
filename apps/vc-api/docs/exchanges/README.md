@@ -17,6 +17,9 @@
 
 # VC-API Exchanges
 
+> [!WARNING]
+> Exchanges are deprecated in favor of [Workflows](../workflows/README.md).
+
 ## Credential Exchange Flows
 
 This flow is based of [VC-API Exchanges](https://w3c-ccg.github.io/vc-api/#initiate-exchange).
