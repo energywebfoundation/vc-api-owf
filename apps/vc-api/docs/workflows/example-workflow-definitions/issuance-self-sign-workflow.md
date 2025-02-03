@@ -114,7 +114,7 @@ Use cases: The Holder is required to present a self signed credential to obtain 
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },

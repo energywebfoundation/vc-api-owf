@@ -114,7 +114,7 @@ Use case: The Holder is required to present self-signed Verifiable Credential to
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },

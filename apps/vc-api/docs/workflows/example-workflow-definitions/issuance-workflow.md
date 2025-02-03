@@ -17,7 +17,7 @@ Use case: The Holder is required to prove control over DID, thus query of type `
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },

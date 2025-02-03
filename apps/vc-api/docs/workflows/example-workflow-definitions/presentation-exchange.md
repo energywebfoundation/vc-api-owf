@@ -46,7 +46,7 @@ Use case: The Holder is required to present an issued VC (PermanentResidentCard)
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },

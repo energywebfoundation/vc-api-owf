@@ -159,7 +159,7 @@ Use case:
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },
@@ -360,7 +360,7 @@ Use case:
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },

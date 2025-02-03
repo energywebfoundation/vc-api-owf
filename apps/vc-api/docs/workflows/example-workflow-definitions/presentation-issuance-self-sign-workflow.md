@@ -149,7 +149,7 @@ Use case: The Holder is required to present a self-signed consent VC and a Perma
           ],
           "interactServices": [
             {
-              "type": "UnmediatedPresentation"
+              "type": "UnmediatedHttpPresentationService2021"
             }
           ]
         },
