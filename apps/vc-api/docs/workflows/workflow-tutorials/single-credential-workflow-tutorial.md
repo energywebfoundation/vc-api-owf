@@ -69,7 +69,9 @@ From a technical point of view, in this tutorial, we have access to the server A
 
 #### 1. Issuance workflow
 The technical issuance workflow is as follows:
-- [1.1  [Authority portal] Configure the credential issuance exchange](#11-authority-portal-configure-the-credential-issuance-exchange)
+- [1.0  [Authority portal] Configure the credential issuance workflow](#10-authority-portal-configure-the-credential-issuance-workflow)
+- [1.1  [Authority portal] Create the credential issuance exchange](#11-authority-portal-create-the-credential-issuance-exchange)
+- [1.2  [Authority portal] Provide an exchange invitation to the citizen](#12-authority-portal-provide-an-exchange-invitation-to-the-citizen)
 - [1.2  [Authority portal] Provide an exchange invitation to the citizen](#12-authority-portal-provide-an-exchange-invitation-to-the-citizen)
 - [1.3  [Resident] Initiate issuance exchange using the request URL](#13-resident-initiate-issuance-exchange-using-the-request-url)
 - [1.4  [Resident] Create a DID](#14-resident-create-a-did)
@@ -93,7 +95,7 @@ The technical issuance workflow is as follows:
 ## Overview and Objective
 
 The objective of this tutorial is walk through a simple credential issuance and presentation flow.
-A diagram of this flow is available in the [Exchanges Documentation](../exchanges.md).
+A diagram of this flow is available in the [Workflows Documentation](../workflows.md).
 
 ## Steps
 ### 0. Setup the Postman Collection
@@ -104,14 +106,14 @@ Then, from the Postman app, import [the open-api json](../openapi.json) and [the
 
 ### 1. Permanent Resident Card issuance
 
-#### 1.1 [Authority portal] Configure the credential issuance exchange
+#### 1.0 [Authority portal] Configure the credential issuance workflow
 
-The authority portal needs to configure the parameters of the permanent resident card issuance exchange by sending an [Exchange Definition](../exchanges.md#exchange-definitions).
-To do this, navigate to the `Vc Api Controller create Exchange` under `vc-api/exchanges` and send the request described below.
+The authority portal needs to configure the parameters of the permanent resident card issuance workflow by sending an [Workflow Definition](../workflows.md#workflow-definitions).
+To do this, navigate to the `Vc Api Controller create Workflow` under `vc-api/workflows` and send the request described below.
 
 **Request URL**
 
-`{VC API base url}/v1/vc-api/exchanges`
+`{VC API base url}/v1/vc-api/workflows`
 
 **HTTP Verb**
 
@@ -119,10 +121,7 @@ To do this, navigate to the `Vc Api Controller create Exchange` under `vc-api/ex
 
 **Request Body**
 
-Fill in the `exchangeId` with a unique id, such as a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier).
-
-Note the `interactService` `type` of `MediatedHttpPresentationService2021`.
-See the [exchanges documentation](../exchanges.md#mediated-exchange-interactions) for information about mediated exchanges.
+Fill in the `workflowId` with a unique id, such as a [UUID](https://en.wikipedia.org/wiki/Universally_unique_identifier).
 
 In order to test the notification functionality, you can use the "[webhook.site](https://webhook.site/)".
 This is a free website which allows you to view and debug callback/webhook HTTP POST requests.
@@ -131,28 +130,44 @@ Please only use this service for this tutorial (or other non-production applicat
 
 To use the webhook.site service with this tutorial, use a dedicated endpoint url generated for you after entering
 the site. It should look similar to `https://webhook.site/efb19fb8-2579-4e1b-8614-d5a03edaaa7a`
-Copy this URL, including the domain, into the exchange definition below.
+Copy this URL, including the domain, into the workflow definition below.
 
 ```json
 {
-    "exchangeId": "<FILL WITH SOME UNIQUE ID>",
-    "query": [
-      {
-        "type": "DIDAuth",
-        "credentialQuery": []
+  "config": {
+    "id":  "<FILL WITH SOME UNIQUE ID>",
+    "steps": {
+      "didAuth": {
+        "verifiablePresentationRequest": {
+          "query": [
+            {
+              "type": "DIDAuth",
+              "credentialQuery": []
+            }
+          ],
+          "interactServices": [
+            {
+              "type": "UnmediatedHttpPresentationService2021"
+            }
+          ]
+        },
+        "callback": [
+          {
+            "url": "FILL YOUR CALLBACK URL, for example 'https://webhook.site/efb19fb8-2579-4e1b-8614-d5a03edaaa7a'"
+          }
+        ],
+        "nextStep": "residentCardIssuance"
+      },
+      "residentCardIssuance": {
+        "callback": [
+          {
+            "url": "FILL YOUR CALLBACK URL, for example 'https://webhook.site/efb19fb8-2579-4e1b-8614-d5a03edaaa7a'"
+          }
+        ]
       }
-    ],
-    "interactServices": [
-      {
-        "type": "MediatedHttpPresentationService2021"
-      }
-    ],
-    "callback": [
-      {
-        "url": "FILL YOUR CALLBACK URL, for example 'https://webhook.site/efb19fb8-2579-4e1b-8614-d5a03edaaa7a'"
-      }
-    ],
-    "isOneTime":true
+    },
+    "initialStep": "didAuth"
+  }
 }
 ```
 
@@ -160,19 +175,54 @@ Copy this URL, including the domain, into the exchange definition below.
 
 `201 Created`
 
-#### 1.2 [Authority portal] Provide an exchange invitation to the citizen
+#### 1.1 [Authority portal] Create the credential issuance exchnage
+
+The authority portal needs to create a permanent resident card issuance exchnage from the workflow definition. 
+To do this, navigate to the `Vc Api Controller create Exchange from Workflow` under `vc-api/workflows` and send the request described below.
+
+**Request URL**
+
+`{VC API base url}/v1/vc-api/workflows/{localWorkflowId}/exchanges`
+
+**HTTP Verb**
+
+`POST`
+
+**Request Body**
+
+The request body can be empty.
+
+```json
+{
+}
+```
+
+**Sample Expected Response Body**
+```json
+{
+    "exchangeId": "http://localhost:3000/v1/vc-api/workflows/wf1/exchanges/a0f44aa7-75a2-4b65-880e-181792fdd0ff",
+    "step": "didAuth",
+    "state": "pending"
+}
+```
+
+**Expected Response HTTP Status Code**
+
+`201 Created`
+
+#### 1.2 [Authority portal] Provide an workflow invitation to the citizen
 
 The authority portal can communicate to the citizen that they can initiate request for a "PermanentResidentCard" credential by
-filling the `exchange id` in the json template below and transmitting the json to the citizen.
+filling the `workflow id` and the `exchange id` in the json template below and transmitting the json to the citizen.
 They can do this transmission by encoding the json in a QR code and displaying to the citizen for example.
 
 ```json
 {
     "outOfBandInvitation": { 
-        "type": "https://energyweb.org/out-of-band-invitation/vc-api-exchange",
+        "type": "https://energyweb.org/out-of-band-invitation/vc-api-workflow",
         "body": { 
             "credentialTypeAvailable": "PermanentResidentCard",
-            "url": "{VC API base url}/v1/vc-api/exchanges/{THE EXCHANGE ID FROM THE PREVIOUS STEP}" 
+            "url": "{VC API base url}/v1/vc-api/workflows/{THE WORKFLOW ID}/exchanges/{THE EXCHANGE ID}" 
         }
     }
 } 
@@ -180,14 +230,14 @@ They can do this transmission by encoding the json in a QR code and displaying t
 
 #### 1.3 [Resident] Initiate issuance exchange using the request URL
 
-Initiate a request for a PermanentResidentCard by POSTing to the `url` directly in Postman or by navigating to the `Vc Api Controller initiate Exchange` request in the collection.
+Initiate a request for a PermanentResidentCard by POSTing to the `url` directly in Postman or by navigating to the `Vc Api Controller participate in Workflow Exchange` request in the collection.
 
 Send the request as described below.
 
 **Request URL**
 
 If using the collection request, fill in the `exchangeid` param to be the exchange ID used in the first step.
-`{VC API base url}/v1/vc-api/exchanges/{exchangeId}`
+`{VC API base url}/v1/vc-api/workflows/{workflowId}/exchanges/{exchangeId}`
 
 **HTTP Verb**
 
@@ -210,8 +260,8 @@ This is providing the location at which we can continue the credential exchange 
 
 ```json
 {
-    "vpRequest": {
-        "challenge": "57ca126c-acbf-4da4-8f79-447150e93128",
+    "verifiablePresentationRequest": {
+        "challenge": "6508cd40-06c2-4cba-9cf5-12ee1cfd6b74",
         "query": [
             {
                 "type": "DIDAuth",
@@ -221,11 +271,12 @@ This is providing the location at which we can continue the credential exchange 
         "interact": {
             "service": [
                 {
-                    "type": "MediatedHttpPresentationService2021",
-                    "serviceEndpoint": "{VC API base url}/v1/exchanges/resident-card-issuance-82793/55fb5bc5-4f5f-40c8-aa8d-f3a1991637fc"
+                    "type": "UnmediatedHttpPresentationService2021",
+                    "serviceEndpoint": "http://localhost:3000/v1/vc-api/workflows/wf1/exchanges/a0f44aa7-75a2-4b65-880e-181792fdd0ff"
                 }
             ]
-        }
+        },
+        "domain": "http://localhost:3000/v1/vc-api"
     }
 }
 ```
@@ -264,19 +315,39 @@ Send the request as described below.
 Response body should be similar to the one below but with a different `did`.
 ```json
 {
-    "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
+    "context": [
+        "https://w3id.org/did/v1",
+        "https://w3id.org/security/suites/ed25519-2018/v1",
+        "https://w3id.org/security/suites/x25519-2019/v1"
+    ],
+    "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
     "verificationMethod": [
         {
-            "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A#z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
+            "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
             "type": "Ed25519VerificationKey2018",
-            "controller": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-            "publicKeyJwk": {
-                "crv": "Ed25519",
-                "x": "7qB2-hwO1ajv4CaLjfK7iB13JPUdGLObB8JGjy95KI0",
-                "kty": "OKP",
-                "kid": "i9CHqa1zwV23F8sxGszjXB53SnB-gKO7aL9hDcmA-ho"
-            }
+            "controller": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
+            "publicKeyBase58": "FJkUQVFgKhwSVHNz1KBBx45g9oezeJM2HvCrDfzL1DK9"
         }
+    ],
+    "authentication": [
+        "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
+    ],
+    "assertionMethod": [
+        "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
+    ],
+    "keyAgreement": [
+        {
+            "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6LSjnvAZUpTB2pDcBsUtJ8CdmSokfo7fsRSqkyY8D5oa1Y4",
+            "type": "X25519KeyAgreementKey2019",
+            "controller": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
+            "publicKeyBase58": "97k13B1b5a6UWoViMecFKBEKuXFzyGFHxnFrdkSGrdmJ"
+        }
+    ],
+    "capabilityInvocation": [
+        "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
+    ],
+    "capabilityDelegation": [
+        "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
     ]
 }
 ```
@@ -320,12 +391,12 @@ The `challenge` should be value received from the VP Request in the previous ste
 An example filed body is shown below.
 ```json
 {
-    "did": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-    "options": {
-        "verificationMethod": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A#z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-        "proofPurpose": "authentication",
-        "challenge": "c2e806b4-35ed-409b-bc3a-b849d7c2b204"
-    }
+  "did": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
+  "options": {
+    "verificationMethod": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
+    "proofPurpose": "authentication",
+    "challenge": "6508cd40-06c2-4cba-9cf5-12ee1cfd6b74"
+  }
 }
 ```
 
@@ -337,16 +408,18 @@ The response should be a verifiable presentation, similar to the one below.
     "@context": [
         "https://www.w3.org/2018/credentials/v1"
     ],
-    "type": "VerifiablePresentation",
+    "type": [
+        "VerifiablePresentation"
+    ],
+    "holder": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
     "proof": {
+        "verificationMethod": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
         "type": "Ed25519Signature2018",
+        "created": "2025-02-03T03:50:07Z",
         "proofPurpose": "authentication",
-        "challenge": "c2e806b4-35ed-409b-bc3a-b849d7c2b204",
-        "verificationMethod": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A#z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-        "created": "2022-04-29T09:25:55.969Z",
-        "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..51vek0DLAcdL2DxMRQlOFfFz306Y-EDvqhWYzCInU9UYFT_HQZHW2udSeX2w35Nn-JO4ouhJFeiM8l3e2sEEBQ"
-    },
-    "holder": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A"
+        "challenge": "6508cd40-06c2-4cba-9cf5-12ee1cfd6b74",
+        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..U-Xzk_WP8_s8yWnRKitQsah-0Vemrieh_n8qk64KzyV8QBX5nG7yGPjg3UrxJBqfBoQQse3igMS3EFBUrkfGAA"
+    }
 }
 ```
 
@@ -357,23 +430,25 @@ The response should be a verifiable presentation, similar to the one below.
 #### 1.6 [Resident] Continue exchange by submitting the DID Auth proof
 
 Continue the exchange using the DIDAuth presentation.
-To do this, open the `Vc Api Controller continue Exchange` request in the `vc-api/exchanges/{exchange id}/v1/{transaction id}` folder.
+To do this, return to the `Vc Api Controller participate in Workflow Exchange` request in the `v1/vc-api/workflows/{workflow id}/exchanges{exchange id}` folder.
 
 Send the request as described below.
 
 **Request URL**
 
-In the request params, use the `transactionId` from the `serviceEndpoint` in the VP Request and `exchangeId` as the unique exchange ID configured in the initial step.
-
-`{VC API base url}/v1/vc-api/exchanges/{EXCHANGE ID}/{TRANSACTION ID}`
+In the request params, use the url from the `serviceEndpoint` in the VP Request.
 
 **HTTP Verb**
 
-`PUT`
+`POST`
 
 **Request Body**
 
-In the request body, copy the VP that was obtained from the previous step.
+In the request body, copy the VP that was obtained from the previous step into the JSON below.
+
+```json
+{ "verifiablePresentation": COPY THE VP HERE }
+```
 
 **Sample Expected Response Body**
 
@@ -381,18 +456,7 @@ The response should be similar to as shown below.
 This response indicates that the client attempt to continue the exchange again (after some interval), using the service endpoint.
 ```json
 {
-    "vpRequest": {
-        "challenge": "08070970-638c-4b43-91bd-08325b08cc4a",
-        "query": [],
-        "interact": {
-            "service": [
-                {
-                    "type": "MediatedHttpPresentationService2021",
-                    "serviceEndpoint": "{VC API base url}/v1/vc-api/exchanges/{EXCHANGE ID}/27ce6175-bab7-4a1b-84b2-87cf87ad9163"
-                }
-            ]
-        }
-    }
+    "redirectUrl": "http://localhost:3000/v1/vc-api/workflows/wf1/exchanges/73210d06-9bac-40e1-aa11-ebde6e1a5a94"
 }
 ```
 
@@ -412,54 +476,50 @@ An example of the expected POST body received in the request bucket is:
 
 ```json
 {
-   "transactionId":"1b9995c6-17ed-4ec4-bbef-7b9ee986bc3c",
-   "exchangeId":"resident-card-issuance-82793",
-   "vpRequest": {
-        "challenge": "57ca126c-acbf-4da4-8f79-447150e93128",
-        "query": [
-            {
-                "type": "DIDAuth",
-                "credentialQuery": []
-            }
-        ],
-        "interact": {
-            "service": [
-                {
-                    "type": "MediatedHttpPresentationService2021",
-                    "serviceEndpoint": "{VC API base url}/v1/vc-api/exchanges/resident-card-issuance-82793/55fb5bc5-4f5f-40c8-aa8d-f3a1991637fc"
-                }
-            ]
-        }
-    },
-   "callback": [
+  "stepId": "didAuth",
+  "vpRequest": {
+    "challenge": "a44fdfeb-1a58-488e-a78a-6dba87ba82c4",
+    "query": [
       {
-        "url": "http://ptsv2.com/t/ebitx-1652373826/post"
+        "type": "DIDAuth",
+        "credentialQuery": []
       }
-   ],
-   "presentationSubmission":{
-      "verifiablePresentation":{
-          "@context": [
-              "https://www.w3.org/2018/credentials/v1"
-          ],
-          "type": "VerifiablePresentation",
-          "proof": {
-              "type": "Ed25519Signature2018",
-              "proofPurpose": "authentication",
-              "challenge": "c2e806b4-35ed-409b-bc3a-b849d7c2b204",
-              "verificationMethod": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A#z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-              "created": "2022-04-29T09:25:55.969Z",
-              "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..51vek0DLAcdL2DxMRQlOFfFz306Y-EDvqhWYzCInU9UYFT_HQZHW2udSeX2w35Nn-JO4ouhJFeiM8l3e2sEEBQ"
-          },
-          "holder": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A"
-      },
-      "verificationResult":{
-         "errors":[],
-         "checks":[
-            "proof"
-         ],
-         "warnings":[]
+    ],
+    "interact": {
+      "service": [
+        {
+          "type": "UnmediatedHttpPresentationService2021",
+          "serviceEndpoint": "http://localhost:3000/v1/vc-api/workflows/wf2/exchanges/73210d06-9bac-40e1-aa11-ebde6e1a5a94"
+        }
+      ]
+    },
+    "domain": "http://localhost:3000/v1/vc-api"
+  },
+  "presentationSubmission": {
+    "verifiablePresentation": {
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1"
+      ],
+      "type": [
+        "VerifiablePresentation"
+      ],
+      "holder": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
+      "proof": {
+        "verificationMethod": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X#z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X",
+        "type": "Ed25519Signature2018",
+        "created": "2025-02-03T04:15:53Z",
+        "proofPurpose": "authentication",
+        "challenge": "a44fdfeb-1a58-488e-a78a-6dba87ba82c4",
+        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..bfkLzD93w4SDSEu8vqpC9PhINh7YYzDyytSAY3ok4oNuuAyYjCuxzIFHGlwg6ZwZbSF5OeZ6f-3lQiOLTZtpBA"
       }
-   }
+    },
+    "verificationResult": {
+      "errors": [],
+      "warnings": [],
+      "problemDetails": []
+    }
+  },
+  "exchangeId": "http://localhost:3000/v1/vc-api/workflows/wf2/exchanges/73210d06-9bac-40e1-aa11-ebde6e1a5a94"
 }
 ```
 
@@ -491,19 +551,39 @@ Note down the `id` property. This is the authority portals's DID.
 
 ```json
 {
-    "id": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
+    "context": [
+        "https://w3id.org/did/v1",
+        "https://w3id.org/security/suites/ed25519-2018/v1",
+        "https://w3id.org/security/suites/x25519-2019/v1"
+    ],
+    "id": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
     "verificationMethod": [
         {
-            "id": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
+            "id": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
             "type": "Ed25519VerificationKey2018",
-            "controller": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-            "publicKeyJwk": {
-                "crv": "Ed25519",
-                "x": "Rijl5w3coKZ2CThvbktmoyaUWxii1hwkfC2R2DrPlxE",
-                "kty": "OKP",
-                "kid": "vIkflusUjN5yuC5d5gr5GPCK3_reiT3SXhYMTMuuRFg"
-            }
+            "controller": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
+            "publicKeyBase58": "31D63FpRNAnvCCYHDcmD4XwQhMZ7X5Zoh3rCV75XZWyG"
         }
+    ],
+    "authentication": [
+        "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke"
+    ],
+    "assertionMethod": [
+        "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke"
+    ],
+    "keyAgreement": [
+        {
+            "id": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6LSmZgztaytJ9Rs4qbd1LNHWienYb8A3dm2oPzLcsNtEFuV",
+            "type": "X25519KeyAgreementKey2019",
+            "controller": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
+            "publicKeyBase58": "AtWqNHB2Cgi7yTDrUgrLC8SJhSb3M2asvRGf8QjMWt8j"
+        }
+    ],
+    "capabilityInvocation": [
+        "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke"
+    ],
+    "capabilityDelegation": [
+        "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke"
     ]
 }
 ```
@@ -584,33 +664,33 @@ The response is an issued Verifiable Credential, similar to the one shown below.
         "VerifiableCredential",
         "PermanentResidentCard"
     ],
+    "issuer": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
+    "issuanceDate": "2019-12-03T12:19:52Z",
+    "expirationDate": "2029-12-03T12:19:52Z",
     "credentialSubject": {
-        "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-        "gender": "Male",
-        "commuterClassification": "C1",
-        "birthDate": "1958-07-17",
-        "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-        "residentSince": "2015-01-01",
-        "givenName": "JOHN",
         "type": [
             "PermanentResident",
             "Person"
         ],
+        "givenName": "JOHN",
+        "familyName": "SMITH",
+        "gender": "Male",
+        "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+        "residentSince": "2015-01-01",
         "lprCategory": "C09",
-        "birthCountry": "Bahamas",
         "lprNumber": "999-999-999",
-        "familyName": "SMITH"
+        "commuterClassification": "C1",
+        "birthCountry": "Bahamas",
+        "birthDate": "1958-07-17",
+        "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
     },
-    "issuer": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-    "issuanceDate": "2019-12-03T12:19:52Z",
     "proof": {
+        "verificationMethod": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
         "type": "Ed25519Signature2018",
+        "created": "2025-02-03T04:25:09Z",
         "proofPurpose": "assertionMethod",
-        "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-        "created": "2022-04-29T09:53:23.786Z",
-        "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..slzsK4BoLyMHX18MtnVlwF9JqKj4BvVC46cjyVBPFPwrjpzGhbLLbAV3x_j-_B4ZUZuQBa5a-yq6CiW6sJ26AA"
-    },
-    "expirationDate": "2029-12-03T12:19:52Z"
+        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nB9amOFOLJzGTfK7L7edXgs6D9y5OWWwcPttw3dIo4D_ekVHRNMP9EhELDOWMc2L5IcHIYIHADRXjoYJdqYuBg"
+    }
 }
 ```
 
@@ -641,7 +721,8 @@ Fill the body with json below, replacing the "FILL" values appropriately.
         "verifiableCredential": ["<FILL WITH THE ISSUED CREDENTIAL>"]
     },
     "options": {
-        "verificationMethod": "<FILL WITH VERIFICATION METHOD ID OF AUTHORITY PORTAL>"
+        "verificationMethod": "<FILL WITH VERIFICATION METHOD ID OF AUTHORITY PORTAL>",
+        "challenge": "self-issued"
     }
 }
 ```
@@ -667,98 +748,39 @@ For example, the body with the filled values would look like:
                     "VerifiableCredential",
                     "PermanentResidentCard"
                 ],
+                "issuer": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
+                "issuanceDate": "2019-12-03T12:19:52Z",
+                "expirationDate": "2029-12-03T12:19:52Z",
                 "credentialSubject": {
-                    "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-                    "gender": "Male",
-                    "commuterClassification": "C1",
-                    "birthDate": "1958-07-17",
-                    "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-                    "residentSince": "2015-01-01",
-                    "givenName": "JOHN",
                     "type": [
                         "PermanentResident",
                         "Person"
                     ],
+                    "givenName": "JOHN",
+                    "familyName": "SMITH",
+                    "gender": "Male",
+                    "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+                    "residentSince": "2015-01-01",
                     "lprCategory": "C09",
-                    "birthCountry": "Bahamas",
                     "lprNumber": "999-999-999",
-                    "familyName": "SMITH"
+                    "commuterClassification": "C1",
+                    "birthCountry": "Bahamas",
+                    "birthDate": "1958-07-17",
+                    "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
                 },
-                "issuer": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                "issuanceDate": "2019-12-03T12:19:52Z",
                 "proof": {
+                    "verificationMethod": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
                     "type": "Ed25519Signature2018",
+                    "created": "2025-02-03T04:25:09Z",
                     "proofPurpose": "assertionMethod",
-                    "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                    "created": "2022-04-29T09:53:23.786Z",
-                    "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..slzsK4BoLyMHX18MtnVlwF9JqKj4BvVC46cjyVBPFPwrjpzGhbLLbAV3x_j-_B4ZUZuQBa5a-yq6CiW6sJ26AA"
-                },
-                "expirationDate": "2029-12-03T12:19:52Z"
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nB9amOFOLJzGTfK7L7edXgs6D9y5OWWwcPttw3dIo4D_ekVHRNMP9EhELDOWMc2L5IcHIYIHADRXjoYJdqYuBg"
+                }
             }
         ]
     },
     "options": {
-        "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL"
-    }
-}
-```
-
-**Sample Expected Response Body**
-
-The response body should return a verifiable presentation similar to this one:
-```json
-{
-    "@context": [
-        "https://www.w3.org/2018/credentials/v1"
-    ],
-    "type": [
-        "VerifiablePresentation"
-    ],
-    "verifiableCredential": [
-        {
-            "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://w3id.org/citizenship/v1"
-            ],
-            "id": "https://issuer.oidp.uscis.gov/credentials/83627465",
-            "type": [
-                "VerifiableCredential",
-                "PermanentResidentCard"
-            ],
-            "credentialSubject": {
-                "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-                "commuterClassification": "C1",
-                "birthDate": "1958-07-17",
-                "lprCategory": "C09",
-                "residentSince": "2015-01-01",
-                "gender": "Male",
-                "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-                "givenName": "JOHN",
-                "type": [
-                    "PermanentResident",
-                    "Person"
-                ],
-                "birthCountry": "Bahamas",
-                "lprNumber": "999-999-999",
-                "familyName": "SMITH"
-            },
-            "issuer": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-            "issuanceDate": "2019-12-03T12:19:52Z",
-            "proof": {
-                "type": "Ed25519Signature2018",
-                "proofPurpose": "assertionMethod",
-                "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                "created": "2022-04-29T09:53:23.786Z",
-                "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..slzsK4BoLyMHX18MtnVlwF9JqKj4BvVC46cjyVBPFPwrjpzGhbLLbAV3x_j-_B4ZUZuQBa5a-yq6CiW6sJ26AA"
-            },
-            "expirationDate": "2029-12-03T12:19:52Z"
-        }
-    ],
-    "proof": {
-        "type": "Ed25519Signature2018",
-        "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-        "created": "2022-04-29T10:21:42.824Z",
-        "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..FW8cPUUglFWbq61ve02LD-JmVQNr-TQ03rc3wlFeOccbapR0y5IsoNEMHF3wU54kdG9mAeLzJ5aXH6uUFA0iAA"
+        "verificationMethod": "{{issuerVerificationMethod}}",
+        "challenge": "self-issued"
     }
 }
 ```
@@ -770,15 +792,16 @@ The response body should return a verifiable presentation similar to this one:
 #### 1.11 [Authority portal] Add a review to the exchange
 
 With a verifiable presentation in hand, the authority portal can add a review to the in-progress exchange.
-Open the `Vc Api Controller add Submission Review` request under the `vc-api/exchanges/{exchange id}/{transaction id}` folder.
+Open the `Vc Api Controller add Workflow Step Review` request under the `/vc-api/workflows/{localWorkflowId}/exchanges/{localExchangeId}/steps/{localStepId}/review` folder.
 
 Send the request as described below.
 
 **Request URL**
 
-Use the same `exchangeId` and `transactionId` as the path variables as in the "Continue Exchange" step.
+Use the same `exchangeId` and `transactionId` as the path variables as in the "Particiapte in Exchange" step.
+Use "residentCardIssuance" as the `localStepId`.
 
-`{VC API base url}/v1/vc-api/exchanges/{exchange id}/{transaction id}/review`
+`{VC API base url}/v1/vc-api/workflows/:localWorkflowId/exchanges/:localExchangeId/steps/:localStepId/review`
 
 **HTTP Verb**
 
@@ -790,14 +813,14 @@ Fill the json below appropriately and send as the body:
 ```json
 {
     "result": "approved",
-    "verifiablePresentation": "<COPY VP FROM PREVIOUS STEP HERE>"
+    "vp": "<COPY VP FROM PREVIOUS STEP HERE>"
 }
 ```
 
 ```json
 {
     "result": "approved",
-    "verifiablePresentation": {
+    "vp": {
         "@context": [
             "https://www.w3.org/2018/credentials/v1"
         ],
@@ -815,40 +838,42 @@ Fill the json below appropriately and send as the body:
                     "VerifiableCredential",
                     "PermanentResidentCard"
                 ],
+                "issuer": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
+                "issuanceDate": "2019-12-03T12:19:52Z",
+                "expirationDate": "2029-12-03T12:19:52Z",
                 "credentialSubject": {
-                    "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-                    "commuterClassification": "C1",
-                    "birthDate": "1958-07-17",
-                    "lprCategory": "C09",
-                    "residentSince": "2015-01-01",
-                    "gender": "Male",
-                    "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-                    "givenName": "JOHN",
                     "type": [
                         "PermanentResident",
                         "Person"
                     ],
-                    "birthCountry": "Bahamas",
+                    "givenName": "JOHN",
+                    "familyName": "SMITH",
+                    "gender": "Male",
+                    "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+                    "residentSince": "2015-01-01",
+                    "lprCategory": "C09",
                     "lprNumber": "999-999-999",
-                    "familyName": "SMITH"
+                    "commuterClassification": "C1",
+                    "birthCountry": "Bahamas",
+                    "birthDate": "1958-07-17",
+                    "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
                 },
-                "issuer": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                "issuanceDate": "2019-12-03T12:19:52Z",
                 "proof": {
+                    "verificationMethod": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
                     "type": "Ed25519Signature2018",
+                    "created": "2025-02-03T04:25:09Z",
                     "proofPurpose": "assertionMethod",
-                    "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                    "created": "2022-04-29T09:53:23.786Z",
-                    "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..slzsK4BoLyMHX18MtnVlwF9JqKj4BvVC46cjyVBPFPwrjpzGhbLLbAV3x_j-_B4ZUZuQBa5a-yq6CiW6sJ26AA"
-                },
-                "expirationDate": "2029-12-03T12:19:52Z"
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nB9amOFOLJzGTfK7L7edXgs6D9y5OWWwcPttw3dIo4D_ekVHRNMP9EhELDOWMc2L5IcHIYIHADRXjoYJdqYuBg"
+                }
             }
         ],
         "proof": {
+            "verificationMethod": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
             "type": "Ed25519Signature2018",
-            "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-            "created": "2022-04-29T10:21:42.824Z",
-            "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..FW8cPUUglFWbq61ve02LD-JmVQNr-TQ03rc3wlFeOccbapR0y5IsoNEMHF3wU54kdG9mAeLzJ5aXH6uUFA0iAA"
+            "created": "2025-02-03T04:34:01Z",
+            "proofPurpose": "authentication",
+            "challenge": "self-issued",
+            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..eIvHVAIvRx7hUzLi53MLy-DLLlFPKng7CNtNRpEguWOhq9kBat0fg1fjq8HSEnmMCzxudHBUNAN27HPcCCoQCg"
         }
     }
 }
@@ -862,25 +887,25 @@ Fill the json below appropriately and send as the body:
 
 As the review is submitted, the resident can continue the exchange to receive the credential.
 
-To do this, return to the `Vc Api Controller continue Exchange` request in the `vc-api/exchanges/{exchange id}/{transaction id}` folder.
+To do this, return to the `Vc Api Controller participate in Workflow Exchange` request.
 Resend the request.
 
 **Request URL**
 
-Use the same `exchangeId` and `transactionId` as used in step [1.6  [Resident] Continue exchange by submitting the DID Auth proof](#16-resident-continue-exchange-by-submitting-the-did-auth-proof)
+Use the same `workflowId` and `exchangeId` as used in step [1.6  [Resident] Continue exchange by submitting the DID Auth proof](#16-resident-continue-exchange-by-submitting-the-did-auth-proof)
 
-`{VC API base url}/v1/vc-api/exchanges/{exchange id}/{transaction id}`
+`{VC API base url}/v1/vc-api/workflows/{local workflow id}/exchanges/{local exchange id}`
 
 **HTTP Verb**
 
-`PUT`
+`POST`
 
 **Request Body**
 
-The same `DIDAuthentication` proof that was submitted in step 1.6
+Can be left empty.
 
 **Sample Expected Response Body**
-The response should be similar to the following, where the `vp` contains the issued credential.
+The response should be similar to the following, where the `verifiablePresentation` contains the issued credential.
 
 ```json
 {
@@ -902,40 +927,42 @@ The response should be similar to the following, where the `vp` contains the iss
                     "VerifiableCredential",
                     "PermanentResidentCard"
                 ],
+                "issuer": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
+                "issuanceDate": "2019-12-03T12:19:52Z",
+                "expirationDate": "2029-12-03T12:19:52Z",
                 "credentialSubject": {
-                    "id": "did:key:z6MkvWkza1fMBWhKnYE3CgMgxHem62YkEw4JbdmEZeFTEZ7A",
-                    "commuterClassification": "C1",
-                    "birthDate": "1958-07-17",
-                    "lprCategory": "C09",
-                    "residentSince": "2015-01-01",
-                    "gender": "Male",
-                    "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
-                    "givenName": "JOHN",
                     "type": [
                         "PermanentResident",
                         "Person"
                     ],
-                    "birthCountry": "Bahamas",
+                    "givenName": "JOHN",
+                    "familyName": "SMITH",
+                    "gender": "Male",
+                    "image": "data:image/png;base64,iVBORw0KGgo...kJggg==",
+                    "residentSince": "2015-01-01",
+                    "lprCategory": "C09",
                     "lprNumber": "999-999-999",
-                    "familyName": "SMITH"
+                    "commuterClassification": "C1",
+                    "birthCountry": "Bahamas",
+                    "birthDate": "1958-07-17",
+                    "id": "did:key:z6Mktm1WzjW7fFRubnDggt92o9dfyNvr4BbNyw7n3wxLvS6X"
                 },
-                "issuer": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                "issuanceDate": "2019-12-03T12:19:52Z",
                 "proof": {
+                    "verificationMethod": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
                     "type": "Ed25519Signature2018",
+                    "created": "2025-02-03T04:25:09Z",
                     "proofPurpose": "assertionMethod",
-                    "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-                    "created": "2022-04-29T09:53:23.786Z",
-                    "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..slzsK4BoLyMHX18MtnVlwF9JqKj4BvVC46cjyVBPFPwrjpzGhbLLbAV3x_j-_B4ZUZuQBa5a-yq6CiW6sJ26AA"
-                },
-                "expirationDate": "2029-12-03T12:19:52Z"
+                    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..nB9amOFOLJzGTfK7L7edXgs6D9y5OWWwcPttw3dIo4D_ekVHRNMP9EhELDOWMc2L5IcHIYIHADRXjoYJdqYuBg"
+                }
             }
         ],
         "proof": {
+            "verificationMethod": "did:key:z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke#z6MkgTU8dW4rhiHPJhNyuBj3udVQWvpxvxpAP4m8KP3YUjke",
             "type": "Ed25519Signature2018",
-            "verificationMethod": "did:key:z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL#z6MkjB8kjJee3JoJ9WmzTG2vXhWJ9KtwPtWLtEec17iFNiEL",
-            "created": "2022-04-29T10:21:42.824Z",
-            "jws": "eyJhbGciOiJFZERTQSIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..FW8cPUUglFWbq61ve02LD-JmVQNr-TQ03rc3wlFeOccbapR0y5IsoNEMHF3wU54kdG9mAeLzJ5aXH6uUFA0iAA"
+            "created": "2025-02-03T04:34:01Z",
+            "proofPurpose": "authentication",
+            "challenge": "self-issued",
+            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..eIvHVAIvRx7hUzLi53MLy-DLLlFPKng7CNtNRpEguWOhq9kBat0fg1fjq8HSEnmMCzxudHBUNAN27HPcCCoQCg"
         }
     }
 }
