@@ -33,3 +33,9 @@ The coordinator executes the business rules and policies and is therefore specif
 ## Why use this implementation?
 - **Open Source**: This implementation is open source and free to use, under an Apache 2.0 license.
 - **Integration with OWF**: This implementation is part of the Open Wallet Foundation ecosystem and strives to be compatible with other OWF projects. In particular, this implementation uses the [OWF Credo project](https://github.com/openwallet-foundation/credo-ts) as the underlying project for credential operations.
+
+## Questions or Feedback
+
+If you have questions or feedback, please either:
+- Open an issue on the [GitHub repository](https://github.com/openwallet-foundation-labs/vc-api)
+- Post a message in the [VC-API channel of the OWF Discord](https://discord.gg/3B2nFmHsqt)
