@@ -21,24 +21,6 @@ In addition to being supported by the Open Wallet Foundation, this project is su
   <a href="https://impactility.com/" target="blank"><img src="./IM.png" height="80" alt="Impactility Logo" /></a>
 </p>
 
-## Architecture
-
-### Libraries
-#### DID Library
-The DID generation logic is encapsulated in the [did](./libraries/did) library.
-This potentially allows the logic to be shared between wallets of various form-factors (e.g. nodejs wallet, a web wallet, another nodejs framework, etc in the future).
-
-Often DID generation requires the generation of a new public-private keypair.
-In order to rename agnostic to the key-generation and storage preferences of a particular wallet implementation, the [did](./libraries/did) DID factories accept public keys in the standard format of JWK.
-
-An abstracted process of creating a DID controlled by a asymmetric key-pair is therefore:
-```javascript
-const key = generateKey(); // Generate a key pair and return the public key necessary to create the DID
-const did = generateDID(key); // Code from ssi-did lib. Returns initial DID Document of DID, including Verification Methods
-```
-
-#### KMS Interface
-
 ## Technology Decisions
 
 Architecture Decision Records are used to track technology and architecture decsions
