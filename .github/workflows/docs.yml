@@ -2,7 +2,7 @@ name: docs-site
 on:
   push:
     branches:
-      - jrhender-29-documentation-improvements
+      - develop
 permissions:
   contents: write
 jobs:
