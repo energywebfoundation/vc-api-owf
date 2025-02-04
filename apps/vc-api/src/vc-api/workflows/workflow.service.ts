@@ -145,6 +145,9 @@ export class WorkflowService {
 
     await this.exchangeRepository.save(exchange);
     const stepResult = exchange.getStep(currentStep.stepId);
+    this.logger.debug(
+      `workflow: ${localWorkflowId}, exchange: ${localExchangeId}, step: ${currentStep.stepId}`
+    );
     const body = CallbackDto.toDto(stepResult);
     body.exchangeId = requestUrl;
 

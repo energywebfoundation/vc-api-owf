@@ -61,6 +61,7 @@ import { ExchangeStateDto } from './workflows/dtos/exchange-state.dto';
 import { ExchangeResponseDto as WfExchangeResponseDto } from './workflows/dtos/exchange-response.dto';
 import { ParticipateInExchangeDto } from './workflows/dtos/participate-in-exchange.dto';
 import { ExchangeStepStateDto } from './workflows/dtos/exchange-step-state.dto';
+import { CreateExchangeDto } from './workflows/dtos/create-exchange.dto';
 
 /**
  * VcApi API conforms to W3C vc-api
@@ -435,7 +436,7 @@ export class VcApiController {
       'Creates a new exchange and returns exchangeId in the response body.\n' +
       'See https://w3c-ccg.github.io/vc-api/#create-exchange'
   })
-  @ApiBody({ type: CreateWorkflowRequestDto })
+  @ApiBody({ type: CreateExchangeDto })
   @ApiCreatedResponse({ type: CreateExchangeSuccessDto })
   @ApiConflictResponse({ type: NotFoundException })
   async createExchangeFromWorkflow(

@@ -694,7 +694,7 @@
         "requestBody": {
           "required": true,
           "content": {
-            "application/json": { "schema": { "$ref": "#/components/schemas/CreateWorkflowRequestDto" } }
+            "application/json": { "schema": { "$ref": "#/components/schemas/CreateExchangeDto" } }
           }
         },
         "responses": {
@@ -1522,6 +1522,7 @@
         "required": ["config"]
       },
       "NotFoundException": { "type": "object", "properties": {} },
+      "CreateExchangeDto": { "type": "object", "properties": {} },
       "CreateExchangeSuccessDto": {
         "type": "object",
         "properties": {
