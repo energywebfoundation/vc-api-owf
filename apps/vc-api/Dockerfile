@@ -6,6 +6,7 @@ FROM base as builder
 
 COPY common common
 COPY rush.json .
+COPY license-header.txt .
 COPY apps/vc-api/package.json apps/vc-api/package.json
 COPY tests/e2e/package.json tests/e2e/package.json
 COPY libraries/did/package.json libraries/did/package.json
