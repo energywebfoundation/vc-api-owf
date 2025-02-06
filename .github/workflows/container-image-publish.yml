@@ -31,7 +31,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ghcr.io/${{ github.repository }}:${{ env.LATEST_VERSION }} -f apps/vc-api/Dockerfile apps/vc-api
+          docker build -t ghcr.io/${{ github.repository }}:${{ env.LATEST_VERSION }} -f apps/vc-api/Dockerfile .
 
       - name: Push Docker image to GitHub Packages
         run: |
