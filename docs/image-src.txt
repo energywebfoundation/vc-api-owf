@@ -1,0 +1,3 @@
+Source files for the images are available here:
+
+- Component diagram: https://docs.google.com/drawings/d/1HMEzctdQpapeff2amePwDL5G0ny8F9HkAQqKytSi9Hs/edit?usp=sharing

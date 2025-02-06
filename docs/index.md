@@ -24,7 +24,7 @@ The VC API endpoints are on the service components and are called by coordinator
 The expected callers of the VC API endpoints are listed in the specification [component overview](https://w3c-ccg.github.io/vc-api/#api-component-overview).
 The relationship between the components is shown in the diagram below.
 
-![VC API Components](https://w3c-ccg.github.io/vc-api/diagrams/components.svg)
+![VC API Components](img/VC%20API%20Components%20-%20OWF%20Copy.svg)
 
 As the project is an implementation of the VC API specification, the project provides the service components and is flexible in how the coordinator components are implemented.
 The coordinator executes the business rules and policies and is therefore specific to the use cases of an organization.
@@ -37,5 +37,6 @@ The coordinator executes the business rules and policies and is therefore specif
 ## Questions or Feedback
 
 If you have questions or feedback, please either:
+
 - Open an issue on the [GitHub repository](https://github.com/openwallet-foundation-labs/vc-api)
 - Post a message in the [VC-API channel of the OWF Discord](https://discord.gg/3B2nFmHsqt)
