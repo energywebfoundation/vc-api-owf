@@ -76,6 +76,10 @@ docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 If it's not working, the [mkdocs-material documentation](https://squidfunk.github.io/mkdocs-material/creating-your-site/#previewing-as-you-write) could be helpful for troubleshooting.
 
+### Docs Publishing
+
+The docs website is published by merging into the `develop` branch (see ./github/workflows/docs.yml).
+
 ## Contributing Guidelines 
 See [contributing.md](./contributing.md)
 
