@@ -30,7 +30,7 @@ The Architecture Decisions Records can be found [here](apps/vc-api/docs/architec
 
 The [ADR Tools command line tool](https://github.com/npryce/adr-tools) can be used to add new ADRs.
 
-## Installation
+## App Development
 This repository is a monorepo that uses [Rush](https://rushjs.io/) with the PNPM package manager.
 
 PNPM is used for its speed and solution to NPM doppelgangers (as well as being the default option for rush).
@@ -65,6 +65,16 @@ To run tests across all apps and libraries in one command, a rush script has bee
 ``` sh
 $ rush test
 ```
+
+## Docs Editing
+
+To edit the documentation, you can run the following command to start the docs server:
+
+```sh
+docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
+```
+
+If it's not working, the [mkdocs-material documentation](https://squidfunk.github.io/mkdocs-material/creating-your-site/#previewing-as-you-write) could be helpful for troubleshooting.
 
 ## Contributing Guidelines 
 See [contributing.md](./contributing.md)
