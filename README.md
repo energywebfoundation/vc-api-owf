@@ -66,6 +66,13 @@ To run tests across all apps and libraries in one command, a rush script has bee
 $ rush test
 ```
 
+## Release Process
+
+Releases are done by manually creating a new release in GitHub.
+Tooling like `release-please` or `release-it` could be used in the future to automate this process.
+
+The release will trigger [a GitHub Action](/.github/workflows/container-image-publish.yml) to publish the new version to the GitHub Container Registry.
+
 ## Docs Editing
 
 To edit the documentation, you can run the following command to start the docs server:
