@@ -1,0 +1,46 @@
+name: Build and Publish Docker Image
+
+on:
+  workflow_dispatch:
+  release:
+    types:
+      - created
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get latest release version
+        id: get_version
+        run: |
+          LATEST_VERSION=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
+          echo "LATEST_VERSION=${LATEST_VERSION}" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if package exists
+        id: check_package
+        run: |
+          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ env.LATEST_VERSION }} > /dev/null 2>&1; then
+            echo "Package already exists. Aborting."
+            exit 1
+          fi
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}:${{ env.LATEST_VERSION }} -f apps/vc-api/Dockerfile .
+
+      - name: Push Docker image to GitHub Packages
+        run: |
+          docker push ghcr.io/${{ github.repository }}:${{ env.LATEST_VERSION }}
