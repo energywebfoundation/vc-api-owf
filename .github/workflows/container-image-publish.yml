@@ -2,9 +2,9 @@ name: Build and Publish Docker Image
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - container-package-publish
+  release:
+    types:
+      - created
 
 jobs:
   build-and-push:
@@ -25,6 +25,14 @@ jobs:
           echo "LATEST_VERSION=${LATEST_VERSION}" >> $GITHUB_ENV
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check if package exists
+        id: check_package
+        run: |
+          if docker manifest inspect ghcr.io/${{ github.repository }}:${{ env.LATEST_VERSION }} > /dev/null 2>&1; then
+            echo "Package already exists. Aborting."
+            exit 1
+          fi
 
       - name: Log in to GitHub Container Registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $GITHUB_ACTOR --password-stdin
