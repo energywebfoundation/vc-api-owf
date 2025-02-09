@@ -19,7 +19,8 @@ export class SeederService {
 
     for (const keyPair of keyPairFixture) {
       const key = await this.keyService.importKey(keyPair);
-      await this.didService.registerKeyDID(key.keyId);
+      const seededDid = await this.didService.registerKeyDID(key.keyId);
+      this.logger.debug(`seeded ${seededDid?.id}`);
     }
 
     this.logger.debug('seeding database complete');
