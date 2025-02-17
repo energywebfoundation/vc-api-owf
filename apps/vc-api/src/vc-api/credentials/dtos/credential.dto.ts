@@ -3,7 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { IsArray, IsDateString, IsObject, IsOptional, IsString } from 'class-validator';
+import {
+  ArrayNotEmpty,
+  IsArray,
+  IsDateString,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString
+} from 'class-validator';
 import { ApiExtraModels, ApiProperty, ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger';
 import { IsIssuer } from '../../exchanges/dtos/custom-validators';
 import { IssuerDto } from './issuer.dto';
@@ -30,6 +38,7 @@ export class CredentialDto {
   id?: string;
 
   @IsArray()
+  @ArrayNotEmpty()
   @IsString({ each: true })
   @ApiProperty({ description: 'The JSON-LD type of the credential.' })
   type: string[];
